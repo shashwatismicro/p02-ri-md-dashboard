@@ -1,0 +1,117 @@
+{
+  "_version": "1.89.0",
+  "sap.app": {
+    "id": "com.oswal.managementcockpit.managementcockpit",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.32.0",
+      "toolsId": "fc19433d-30d9-4152-bfb2-2f471162c57a"
+    },
+    "dataSources": {
+      "managementCockpitService": {
+        "uri": "/sap/opu/odata4/sap/zui_mgmt_cockpit_o4/srvd/sap/zui_mgmt_cockpit/0001/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.152.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "": {
+        "dataSource": "managementCockpitService",
+        "preload": true,
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.oswal.managementcockpit.managementcockpit.i18n.i18n"
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "com.oswal.managementcockpit.managementcockpit.view",
+        "async": true,
+        "viewPath": "com.oswal.managementcockpit.managementcockpit.view"
+      },
+      "routes": [
+        {
+          "name": "RouteDashboard",
+          "pattern": ":?query:",
+          "target": [
+            "TargetDashboard"
+          ]
+        }
+      ],
+      "targets": {
+        "TargetDashboard": {
+          "id": "Dashboard",
+          "name": "Dashboard"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "com.oswal.managementcockpit.managementcockpit.view.App",
+      "type": "XML",
+      "id": "App",
+      "async": true
+    }
+  }
+}

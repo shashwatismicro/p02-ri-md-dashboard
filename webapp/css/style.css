@@ -1,0 +1,220 @@
+/* Management Cockpit page background */
+.sapMPage,
+.sapMPageBgStandard {
+    background: #f5f7fa;
+}
+
+/* Main dashboard content */
+[id$="managementCockpitContent"] {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* Director Dashboard header */
+[id$="dashboardHeader"] {
+    padding: 0.5rem 0.25rem 1rem;
+}
+
+[id$="dashboardMainTitle"] {
+    color: #1d2d3e;
+}
+
+[id$="dashboardCompanyText"] {
+    color: #556b82;
+}
+
+/* Navigation tabs */
+[id$="managementCockpitTabs"] {
+    background: transparent;
+}
+
+[id$="managementCockpitTabs"] .sapMITBHead {
+    background: #ffffff;
+    border-radius: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.08);
+}
+
+[id$="managementCockpitTabs"] .sapMITBContent {
+    background: transparent;
+    border-bottom: none;
+    padding: 1rem 0;
+}
+
+/* Filter bar */
+[id$="dashboardFilterBar"] {
+    background: #ffffff;
+    border: 1px solid #d9e2ec;
+    border-radius: 2.75rem;
+    padding: 1rem;
+    box-sizing: border-box;
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
+}
+
+/* KPI cards */
+[id$="totalSalesCard"],
+[id$="totalRevenueCard"],
+[id$="accountsReceivableCard"],
+[id$="accountsPayableCard"] {
+    min-height: 9.5rem;
+    background: #ffffff;
+    border: 1px solid #e3e8ee;
+    border-radius: 0.85rem;
+    box-sizing: border-box;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Individual KPI accent colors */
+[id$="totalSalesCard"] {
+    border-top: 0.3rem solid #0a6ed1;
+}
+
+[id$="totalRevenueCard"] {
+    border-top: 0.3rem solid #107e3e;
+}
+
+[id$="accountsReceivableCard"] {
+    border-top: 0.3rem solid #e9730c;
+}
+
+[id$="accountsPayableCard"] {
+    border-top: 0.3rem solid #bb0000;
+}
+
+[id$="totalSalesCard"]:hover,
+[id$="totalRevenueCard"]:hover,
+[id$="accountsReceivableCard"]:hover,
+[id$="accountsPayableCard"]:hover {
+    transform: translateY(-0.2rem);
+    box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.12);
+}
+
+
+/* KPI headings */
+[id$="totalSalesLabel"],
+[id$="totalRevenueLabel"],
+[id$="accountsReceivableLabel"],
+[id$="accountsPayableLabel"] {
+    color: #354a5f;
+    font-weight: 600;
+}
+
+/* KPI numbers */
+[id$="totalSalesValue"] .sapMObjectNumberText,
+[id$="totalRevenueValue"] .sapMObjectNumberText,
+[id$="accountsReceivableValue"] .sapMObjectNumberText,
+[id$="accountsPayableValue"] .sapMObjectNumberText {
+    color: #1d2d3e;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 700;
+}
+
+
+[id$="totalSalesValue"] .sapMObjectNumberUnit,
+[id$="totalRevenueValue"] .sapMObjectNumberUnit,
+[id$="accountsReceivableValue"] .sapMObjectNumberUnit,
+[id$="accountsPayableValue"] .sapMObjectNumberUnit {
+    color: #556b82;
+    font-weight: 600;
+}
+
+/* Top customer and monthly revenue panels */
+[id$="topCustomersSalesPanel"],
+[id$="topCustomersRevenuePanel"],
+[id$="monthlyRevenuePanel"] {
+    background: #ffffff;
+    border: 1px solid #e3e8ee;
+    border-radius: 0.85rem;
+    box-sizing: border-box;
+    box-shadow: 0 0.125rem 0.6rem rgba(0, 0, 0, 0.08);
+}
+
+[id$="topCustomersSalesPanel"] {
+    border-left: 0.3rem solid #0a6ed1;
+}
+
+[id$="topCustomersRevenuePanel"] {
+    border-left: 0.3rem solid #107e3e;
+}
+
+[id$="monthlyRevenuePanel"] {
+    border-left: 0.3rem solid #6c5ce7;
+    margin-bottom: 2rem;
+}
+
+/* Panel titles */
+[id$="topCustomersSalesTitle"],
+[id$="topCustomersRevenueTitle"],
+[id$="monthlyRevenueTitle"] {
+    color: #1d2d3e;
+    font-weight: 700;
+}
+
+/* Progress bars */
+[id$="topCustomersSalesPanel"] .sapMPI,
+[id$="topCustomersRevenuePanel"] .sapMPI,
+[id$="monthlyRevenuePanel"] .sapMPI {
+    height: 1.5rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+[id$="topCustomersSalesPanel"] .sapMPIBar {
+    background: #0a6ed1;
+}
+
+[id$="topCustomersRevenuePanel"] .sapMPIBar {
+    background: #107e3e;
+}
+
+[id$="monthlyRevenuePanel"] .sapMPIBar {
+    background: #6c5ce7;
+}
+
+/* Go button */
+[id$="applyFiltersButton"] .sapMBtnInner {
+    border-radius: 0.5rem;
+    font-weight: 600;
+}
+
+/* Placeholder sections for future tabs */
+[id$="financeContent"],
+[id$="salesContent"],
+[id$="procurementContent"],
+[id$="inventoryContent"],
+[id$="productionContent"],
+[id$="workingCapitalContent"],
+[id$="exceptionsContent"] {
+    min-height: 12rem;
+    background: #ffffff;
+    border: 1px solid #e3e8ee;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+/* Responsive layout */
+@media (max-width: 1100px) {
+    [id$="totalSalesCard"],
+    [id$="totalRevenueCard"],
+    [id$="accountsReceivableCard"],
+    [id$="accountsPayableCard"] {
+        width: 49% !important;
+    }
+}
+
+@media (max-width: 750px) {
+    [id$="totalSalesCard"],
+    [id$="totalRevenueCard"],
+    [id$="accountsReceivableCard"],
+    [id$="accountsPayableCard"],
+    [id$="topCustomersSalesPanel"],
+    [id$="topCustomersRevenuePanel"] {
+        width: 100% !important;
+    }
+
+    [id$="dashboardFilterBar"] {
+        justify-content: flex-start !important;
+    }
+}

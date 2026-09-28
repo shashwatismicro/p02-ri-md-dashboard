@@ -1,0 +1,822 @@
+<mvc:View
+    controllerName="com.oswal.managementcockpit.managementcockpit.controller.Dashboard"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page
+        id="page"
+        class="sapUiContentPadding">
+
+        <content>
+            <VBox
+                id="managementCockpitContent"
+                width="100%">
+
+                <HBox
+                    id="dashboardHeader"
+                    width="100%"
+                    justifyContent="SpaceBetween"
+                    alignItems="Center"
+                    class="sapUiSmallMarginBottom">
+
+                    <VBox id="dashboardHeaderText">
+                        <Title
+                            id="dashboardMainTitle"
+                            text="Director Dashboard"
+                            level="H1" />
+
+                        <Text
+                            id="dashboardCompanyText"
+                            text="Company Code: OCPL (Oswal Castings Pvt Ltd)"
+                            class="sapUiTinyMarginTop" />
+                    </VBox>
+
+                    <ObjectStatus
+                        id="prototypeModeStatus"
+                        text="Prototype Mode"
+                        state="Information"
+                        icon="sap-icon://information" />
+                </HBox>
+
+                <IconTabBar
+                    id="managementCockpitTabs"
+                    selectedKey="executiveOverview"
+                    expandable="false"
+                    stretchContentHeight="false"
+                    class="sapUiResponsiveContentPadding">
+
+                    <items>
+
+                        <!-- Executive Overview -->
+                        <IconTabFilter
+                            id="executiveOverviewTab"
+                            key="executiveOverview"
+                            text="Executive Overview">
+
+                            <VBox
+                                id="executiveOverviewContent"
+                                class="sapUiMediumMarginTop">
+
+                                <!-- Global Filter Bar -->
+                                <HBox
+                                    id="dashboardFilterBar"
+                                    width="100%"
+                                    wrap="Wrap"
+                                    justifyContent="End"
+                                    alignItems="End"
+                                    class="sapUiSmallMarginBottom">
+
+                                    <VBox
+                                        id="companyCodeFilterBox"
+                                        class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+
+                                        <Label
+                                            id="companyCodeLabel"
+                                            text="Company Code"
+                                            labelFor="companyCodeSelect" />
+
+                                        <Select
+                                            id="companyCodeSelect"
+                                            width="9rem"
+                                            selectedKey="OCPL">
+
+                                            <items>
+                                                <core:Item
+                                                    id="companyCodeOCPL"
+                                                    key="OCPL"
+                                                    text="OCPL" />
+                                            </items>
+                                        </Select>
+                                    </VBox>
+
+                                    <VBox
+                                        id="plantFilterBox"
+                                        class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+
+                                        <Label
+                                            id="plantLabel"
+                                            text="Plant"
+                                            labelFor="plantSelect" />
+
+                                        <Select
+                                            id="plantSelect"
+                                            width="9rem"
+                                            selectedKey="ALL">
+
+                                            <items>
+                                                <core:Item
+                                                    id="plantAll"
+                                                    key="ALL"
+                                                    text="All" />
+
+                                                <core:Item
+                                                    id="plantOC01"
+                                                    key="OC01"
+                                                    text="OC01" />
+
+                                                <core:Item
+                                                    id="plantOC02"
+                                                    key="OC02"
+                                                    text="OC02" />
+
+                                                <core:Item
+                                                    id="plantOC03"
+                                                    key="OC03"
+                                                    text="OC03" />
+                                            </items>
+                                        </Select>
+                                    </VBox>
+
+                                    <VBox
+                                        id="fiscalYearFilterBox"
+                                        class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+
+                                        <Label
+                                            id="fiscalYearLabel"
+                                            text="Fiscal Year"
+                                            labelFor="fiscalYearSelect" />
+
+                                        <Select
+                                            id="fiscalYearSelect"
+                                            width="9rem"
+                                            selectedKey="2026">
+
+                                            <items>
+                                                <core:Item
+                                                    id="fiscalYear2026"
+                                                    key="2026"
+                                                    text="2026" />
+
+                                                <core:Item
+                                                    id="fiscalYear2025"
+                                                    key="2025"
+                                                    text="2025" />
+
+                                                <core:Item
+                                                    id="fiscalYear2024"
+                                                    key="2024"
+                                                    text="2024" />
+                                            </items>
+                                        </Select>
+                                    </VBox>
+
+                                    <VBox
+                                        id="periodFilterBox"
+                                        class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+
+                                        <Label
+                                            id="periodLabel"
+                                            text="Period"
+                                            labelFor="periodSelect" />
+
+                                        <Select
+                                            id="periodSelect"
+                                            width="9rem"
+                                            selectedKey="08">
+
+                                            <items>
+                                                <core:Item id="periodApr" key="04" text="Apr" />
+                                                <core:Item id="periodMay" key="05" text="May" />
+                                                <core:Item id="periodJun" key="06" text="Jun" />
+                                                <core:Item id="periodJul" key="07" text="Jul" />
+                                                <core:Item id="periodAug" key="08" text="Aug" />
+                                                <core:Item id="periodSep" key="09" text="Sep" />
+                                                <core:Item id="periodOct" key="10" text="Oct" />
+                                                <core:Item id="periodNov" key="11" text="Nov" />
+                                                <core:Item id="periodDec" key="12" text="Dec" />
+                                                <core:Item id="periodJan" key="01" text="Jan" />
+                                                <core:Item id="periodFeb" key="02" text="Feb" />
+                                                <core:Item id="periodMar" key="03" text="Mar" />
+                                            </items>
+                                        </Select>
+                                    </VBox>
+
+                                    <Button
+                                        id="applyFiltersButton"
+                                        text="Go"
+                                        type="Emphasized"
+                                        width="5rem"
+                                        press=".onApplyFilters"
+                                        class="sapUiTinyMarginBottom" />
+                                </HBox>
+
+                                <!-- KPI Cards -->
+                                <HBox
+                                    id="kpiCardRow"
+                                    width="100%"
+                                    wrap="Wrap"
+                                    justifyContent="SpaceBetween"
+                                    class="sapUiSmallMarginTop">
+
+                                    <VBox
+                                        id="totalSalesCard"
+                                        width="24%"
+                                        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
+
+                                        <HBox
+                                            id="totalSalesCardHeader"
+                                            alignItems="Center">
+
+                                            <core:Icon
+                                                id="totalSalesIcon"
+                                                src="sap-icon://sales-order"
+                                                size="1.5rem"
+                                                color="#0a6ed1"
+                                                class="sapUiTinyMarginEnd" />
+
+                                            <Text
+                                                id="totalSalesLabel"
+                                                text="Total Sales" />
+                                        </HBox>
+
+                                        <ObjectNumber
+                                            id="totalSalesValue"
+                                            number="1,245.67"
+                                            unit="MT"
+                                            emphasized="true"
+                                            class="sapUiSmallMarginTop" />
+
+                                        <ObjectStatus
+                                            id="totalSalesStatus"
+                                            text="Demonstration value"
+                                            state="Information"
+                                            class="sapUiTinyMarginTop" />
+                                    </VBox>
+
+                                    <VBox
+                                        id="totalRevenueCard"
+                                        width="24%"
+                                        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
+
+                                        <HBox
+                                            id="totalRevenueCardHeader"
+                                            alignItems="Center">
+
+                                            <core:Icon
+                                                id="totalRevenueIcon"
+                                                src="sap-icon://money-bills"
+                                                size="1.5rem"
+                                                color="#0a6ed1"
+                                                class="sapUiTinyMarginEnd" />
+
+                                            <Text
+                                                id="totalRevenueLabel"
+                                                text="Total Revenue" />
+                                        </HBox>
+
+                                        <ObjectNumber
+                                            id="totalRevenueValue"
+                                            number="₹ 125.4"
+                                            unit="Cr"
+                                            emphasized="true"
+                                            class="sapUiSmallMarginTop" />
+
+                                        <ObjectStatus
+                                            id="totalRevenueStatus"
+                                            text="Demonstration value"
+                                            state="Information"
+                                            class="sapUiTinyMarginTop" />
+                                    </VBox>
+
+                                    <VBox
+                                        id="accountsReceivableCard"
+                                        width="24%"
+                                        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
+
+                                        <HBox
+                                            id="accountsReceivableCardHeader"
+                                            alignItems="Center">
+
+                                            <core:Icon
+                                                id="accountsReceivableIcon"
+                                                src="sap-icon://customer-financial-fact-sheet"
+                                                size="1.5rem"
+                                                color="#0a6ed1"
+                                                class="sapUiTinyMarginEnd" />
+
+                                            <Text
+                                                id="accountsReceivableLabel"
+                                                text="Accounts Receivable" />
+                                        </HBox>
+
+                                        <ObjectNumber
+                                            id="accountsReceivableValue"
+                                            number="₹ 32.6"
+                                            unit="Cr"
+                                            emphasized="true"
+                                            class="sapUiSmallMarginTop" />
+
+                                        <ObjectStatus
+                                            id="accountsReceivableStatus"
+                                            text="All historical outstanding items"
+                                            state="Information"
+                                            class="sapUiTinyMarginTop" />
+                                    </VBox>
+
+                                    <VBox
+                                        id="accountsPayableCard"
+                                        width="24%"
+                                        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
+
+                                        <HBox
+                                            id="accountsPayableCardHeader"
+                                            alignItems="Center">
+
+                                            <core:Icon
+                                                id="accountsPayableIcon"
+                                                src="sap-icon://supplier"
+                                                size="1.5rem"
+                                                color="#0a6ed1"
+                                                class="sapUiTinyMarginEnd" />
+
+                                            <Text
+                                                id="accountsPayableLabel"
+                                                text="Accounts Payable" />
+                                        </HBox>
+
+                                        <ObjectNumber
+                                            id="accountsPayableValue"
+                                            number="₹ 21.8"
+                                            unit="Cr"
+                                            emphasized="true"
+                                            class="sapUiSmallMarginTop" />
+
+                                        <ObjectStatus
+                                            id="accountsPayableStatus"
+                                            text="All historical outstanding items"
+                                            state="Information"
+                                            class="sapUiTinyMarginTop" />
+                                    </VBox>
+                                </HBox>
+
+                                <!-- Top Customer Panels -->
+                                <HBox
+                                    id="customerChartRow"
+                                    width="100%"
+                                    wrap="Wrap"
+                                    justifyContent="SpaceBetween"
+                                    class="sapUiSmallMarginTop">
+
+                                    <VBox
+                                        id="topCustomersSalesPanel"
+                                        width="49%"
+                                        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
+
+                                        <Title
+                                            id="topCustomersSalesTitle"
+                                            text="Top 4 Customers by Total Sales"
+                                            level="H3"
+                                            class="sapUiSmallMarginBottom" />
+
+                                        <Text
+                                            id="salesCustomer1Name"
+                                            text="Tata Motors"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <ProgressIndicator
+                                            id="salesCustomer1Bar"
+                                            percentValue="100"
+                                            displayValue="315.4 MT"
+                                            state="Information"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <Text
+                                            id="salesCustomer2Name"
+                                            text="Maruti Suzuki"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <ProgressIndicator
+                                            id="salesCustomer2Bar"
+                                            percentValue="82"
+                                            displayValue="258.7 MT"
+                                            state="Information"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <Text
+                                            id="salesCustomer3Name"
+                                            text="Hero MotoCorp"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <ProgressIndicator
+                                            id="salesCustomer3Bar"
+                                            percentValue="64"
+                                            displayValue="201.9 MT"
+                                            state="Information"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <Text
+                                            id="salesCustomer4Name"
+                                            text="Ashok Leyland"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <ProgressIndicator
+                                            id="salesCustomer4Bar"
+                                            percentValue="47"
+                                            displayValue="148.3 MT"
+                                            state="Information" />
+
+                                        <ObjectStatus
+                                            id="topCustomersSalesDemoStatus"
+                                            text="Demonstration values"
+                                            state="Information"
+                                            class="sapUiSmallMarginTop" />
+                                    </VBox>
+
+                                    <VBox
+                                        id="topCustomersRevenuePanel"
+                                        width="49%"
+                                        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
+
+                                        <Title
+                                            id="topCustomersRevenueTitle"
+                                            text="Top 4 Customers by Total Revenue"
+                                            level="H3"
+                                            class="sapUiSmallMarginBottom" />
+
+                                        <Text
+                                            id="revenueCustomer1Name"
+                                            text="Maruti Suzuki"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <ProgressIndicator
+                                            id="revenueCustomer1Bar"
+                                            percentValue="100"
+                                            displayValue="₹ 26.5 Cr"
+                                            state="Information"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <Text
+                                            id="revenueCustomer2Name"
+                                            text="Tata Motors"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <ProgressIndicator
+                                            id="revenueCustomer2Bar"
+                                            percentValue="69"
+                                            displayValue="₹ 18.2 Cr"
+                                            state="Information"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <Text
+                                            id="revenueCustomer3Name"
+                                            text="Hero MotoCorp"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <ProgressIndicator
+                                            id="revenueCustomer3Bar"
+                                            percentValue="53"
+                                            displayValue="₹ 14.1 Cr"
+                                            state="Information"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <Text
+                                            id="revenueCustomer4Name"
+                                            text="Ashok Leyland"
+                                            class="sapUiTinyMarginBottom" />
+
+                                        <ProgressIndicator
+                                            id="revenueCustomer4Bar"
+                                            percentValue="37"
+                                            displayValue="₹ 9.8 Cr"
+                                            state="Information" />
+
+                                        <ObjectStatus
+                                            id="topCustomersRevenueDemoStatus"
+                                            text="Demonstration values"
+                                            state="Information"
+                                            class="sapUiSmallMarginTop" />
+                                    </VBox>
+                                </HBox>
+
+                                <!-- Month-wise Revenue -->
+                                <VBox
+                                    id="monthlyRevenuePanel"
+                                    width="100%"
+                                    class="sapUiContentPadding sapUiSmallMarginTop sapUiShadowLevel1">
+
+                                    <HBox
+                                        id="monthlyRevenueHeader"
+                                        width="100%"
+                                        justifyContent="SpaceBetween"
+                                        alignItems="Center"
+                                        class="sapUiSmallMarginBottom">
+
+                                        <Title
+                                            id="monthlyRevenueTitle"
+                                            text="Month-wise Total Revenue"
+                                            level="H3" />
+
+                                        <ObjectStatus
+                                            id="monthlyRevenueDemoStatus"
+                                            text="Demonstration values"
+                                            state="Information" />
+                                    </HBox>
+
+                                    <Text
+                                        id="monthAprLabel"
+                                        text="Apr"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthAprRevenue"
+                                        percentValue="58"
+                                        displayValue="₹ 78 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthMayLabel"
+                                        text="May"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthMayRevenue"
+                                        percentValue="62"
+                                        displayValue="₹ 82 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthJunLabel"
+                                        text="Jun"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthJunRevenue"
+                                        percentValue="69"
+                                        displayValue="₹ 91 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthJulLabel"
+                                        text="Jul"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthJulRevenue"
+                                        percentValue="74"
+                                        displayValue="₹ 98 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthAugLabel"
+                                        text="Aug"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthAugRevenue"
+                                        percentValue="83"
+                                        displayValue="₹ 110 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthSepLabel"
+                                        text="Sep"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthSepRevenue"
+                                        percentValue="89"
+                                        displayValue="₹ 118 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthOctLabel"
+                                        text="Oct"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthOctRevenue"
+                                        percentValue="92"
+                                        displayValue="₹ 121 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthNovLabel"
+                                        text="Nov"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthNovRevenue"
+                                        percentValue="95"
+                                        displayValue="₹ 125 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthDecLabel"
+                                        text="Dec"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthDecRevenue"
+                                        percentValue="72"
+                                        displayValue="₹ 95 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthJanLabel"
+                                        text="Jan"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthJanRevenue"
+                                        percentValue="77"
+                                        displayValue="₹ 102 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthFebLabel"
+                                        text="Feb"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthFebRevenue"
+                                        percentValue="81"
+                                        displayValue="₹ 107 Cr"
+                                        state="Information"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <Text
+                                        id="monthMarLabel"
+                                        text="Mar"
+                                        class="sapUiTinyMarginBottom" />
+
+                                    <ProgressIndicator
+                                        id="monthMarRevenue"
+                                        percentValue="87"
+                                        displayValue="₹ 115 Cr"
+                                        state="Information" />
+                                </VBox>
+
+                            </VBox>
+                        </IconTabFilter>
+
+                        <!-- Finance -->
+                        <IconTabFilter
+                            id="financeTab"
+                            key="finance"
+                            text="Finance">
+
+                            <VBox
+                                id="financeContent"
+                                class="sapUiMediumMarginTop">
+
+                                <Title
+                                    id="financeTitle"
+                                    text="Finance"
+                                    level="H2" />
+
+                                <Text
+                                    id="financePlaceholder"
+                                    text="Finance dashboard content will be added later."
+                                    class="sapUiSmallMarginTop" />
+                            </VBox>
+                        </IconTabFilter>
+
+                        <!-- Sales -->
+                        <IconTabFilter
+                            id="salesTab"
+                            key="sales"
+                            text="Sales">
+
+                            <VBox
+                                id="salesContent"
+                                class="sapUiMediumMarginTop">
+
+                                <Title
+                                    id="salesTitle"
+                                    text="Sales"
+                                    level="H2" />
+
+                                <Text
+                                    id="salesPlaceholder"
+                                    text="Sales dashboard content will be added later."
+                                    class="sapUiSmallMarginTop" />
+                            </VBox>
+                        </IconTabFilter>
+
+                        <!-- Procurement -->
+                        <IconTabFilter
+                            id="procurementTab"
+                            key="procurement"
+                            text="Procurement">
+
+                            <VBox
+                                id="procurementContent"
+                                class="sapUiMediumMarginTop">
+
+                                <Title
+                                    id="procurementTitle"
+                                    text="Procurement"
+                                    level="H2" />
+
+                                <Text
+                                    id="procurementPlaceholder"
+                                    text="Procurement dashboard content will be added later."
+                                    class="sapUiSmallMarginTop" />
+                            </VBox>
+                        </IconTabFilter>
+
+                        <!-- Inventory -->
+                        <IconTabFilter
+                            id="inventoryTab"
+                            key="inventory"
+                            text="Inventory">
+
+                            <VBox
+                                id="inventoryContent"
+                                class="sapUiMediumMarginTop">
+
+                                <Title
+                                    id="inventoryTitle"
+                                    text="Inventory"
+                                    level="H2" />
+
+                                <Text
+                                    id="inventoryPlaceholder"
+                                    text="Inventory dashboard content will be added later."
+                                    class="sapUiSmallMarginTop" />
+                            </VBox>
+                        </IconTabFilter>
+
+                        <!-- Production -->
+                        <IconTabFilter
+                            id="productionTab"
+                            key="production"
+                            text="Production">
+
+                            <VBox
+                                id="productionContent"
+                                class="sapUiMediumMarginTop">
+
+                                <Title
+                                    id="productionTitle"
+                                    text="Production"
+                                    level="H2" />
+
+                                <Text
+                                    id="productionPlaceholder"
+                                    text="Production dashboard content will be added later."
+                                    class="sapUiSmallMarginTop" />
+                            </VBox>
+                        </IconTabFilter>
+
+                        <!-- Working Capital -->
+                        <IconTabFilter
+                            id="workingCapitalTab"
+                            key="workingCapital"
+                            text="Working Capital">
+
+                            <VBox
+                                id="workingCapitalContent"
+                                class="sapUiMediumMarginTop">
+
+                                <Title
+                                    id="workingCapitalTitle"
+                                    text="Working Capital"
+                                    level="H2" />
+
+                                <Text
+                                    id="workingCapitalPlaceholder"
+                                    text="Working Capital dashboard content will be added later."
+                                    class="sapUiSmallMarginTop" />
+                            </VBox>
+                        </IconTabFilter>
+
+                        <!-- Exceptions -->
+                        <IconTabFilter
+                            id="exceptionsTab"
+                            key="exceptions"
+                            text="Exceptions">
+
+                            <VBox
+                                id="exceptionsContent"
+                                class="sapUiMediumMarginTop">
+
+                                <Title
+                                    id="exceptionsTitle"
+                                    text="Exceptions"
+                                    level="H2" />
+
+                                <Text
+                                    id="exceptionsPlaceholder"
+                                    text="Exceptions and management alerts will be added later."
+                                    class="sapUiSmallMarginTop" />
+                            </VBox>
+                        </IconTabFilter>
+
+                    </items>
+                </IconTabBar>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>
