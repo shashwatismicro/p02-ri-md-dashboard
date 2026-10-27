@@ -47,6 +47,7 @@
                     selectedKey="executiveOverview"
                     expandable="false"
                     stretchContentHeight="false"
+                    select=".onManagementTabSelect"
                     class="sapUiResponsiveContentPadding">
 
                     <items>
@@ -953,26 +954,16 @@
                         </IconTabFilter>
 
                         <!-- Production -->
-                        <IconTabFilter
-                            id="productionTab"
-                            key="production"
-                            text="Production">
+<IconTabFilter
+    id="productionTab"
+    key="production"
+    text="Production">
 
-                            <VBox
-                                id="productionContent"
-                                class="sapUiMediumMarginTop">
-
-                                <Title
-                                    id="productionTitle"
-                                    text="Production"
-                                    level="H2" />
-
-                                <Text
-                                    id="productionPlaceholder"
-                                    text="Production dashboard content will be added later."
-                                    class="sapUiSmallMarginTop" />
-                            </VBox>
-                        </IconTabFilter>
+    <mvc:XMLView
+        id="productionModuleView"
+        viewName="com.oswal.managementcockpit.managementcockpit.view.Production"
+        async="true" />
+</IconTabFilter>
 
                         <!-- Working Capital -->
                         <IconTabFilter

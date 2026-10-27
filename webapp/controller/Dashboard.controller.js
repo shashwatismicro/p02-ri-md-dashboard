@@ -115,6 +115,56 @@ this.getView().setModel(
                 );
             },
 
+            onManagementTabSelect(
+    oEvent
+) {
+    const sSelectedKey =
+        oEvent.getParameter("key");
+
+    if (
+        sSelectedKey !==
+        "production"
+    ) {
+        return;
+    }
+
+    const oProductionView =
+        this.byId(
+            "productionModuleView"
+        );
+
+    if (!oProductionView) {
+        console.error(
+            "Production module view is not available."
+        );
+        return;
+    }
+
+    const oProductionController =
+        oProductionView.getController();
+
+    if (
+        !oProductionController ||
+        typeof oProductionController
+            .loadProductionData !==
+            "function"
+    ) {
+        console.error(
+            "Production controller or loadProductionData method is not available."
+        );
+        return;
+    }
+
+    const sSelectedPlant =
+        this.byId(
+            "plantSelect"
+        ).getSelectedKey();
+
+    oProductionController.loadProductionData(
+        sSelectedPlant
+    );
+},
+
                         async onApplyFilters() {
                 const sCompanyCode =
                     this.byId("companyCodeSelect").getSelectedKey();

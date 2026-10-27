@@ -287,3 +287,100 @@
     font-weight: 600;
     text-align: center;
 }
+
+/* =========================================================
+   Production Module
+   ========================================================= */
+
+[id$="productionModuleContent"] {
+    box-sizing: border-box;
+}
+
+/* Placeholder KPI cards */
+.productionKpiCard {
+    width: 24% !important;
+    min-height: 8.5rem;
+    background: #ffffff;
+    border: 1px solid #e3e8ee;
+    border-top: 0.3rem solid #89919a;
+    border-radius: 0.85rem;
+    box-sizing: border-box;
+    box-shadow: 0 0.125rem 0.6rem rgba(0, 0, 0, 0.08);
+}
+
+/* Main Production table card */
+[id$="productionTablePanel"] {
+    background: #ffffff;
+    border: 1px solid #e3e8ee;
+    border-left: 0.3rem solid #0a6ed1;
+    border-radius: 0.85rem;
+    box-sizing: border-box;
+    box-shadow: 0 0.125rem 0.6rem rgba(0, 0, 0, 0.08);
+}
+
+/* Module and table titles */
+[id$="productionModuleTitle"],
+[id$="productionTableTitle"] {
+    color: #1d2d3e;
+    font-weight: 700;
+}
+
+/* Minimum table width preserves all dynamic columns */
+[id$="productionMovementTable"] {
+    min-width: 82rem;
+}
+
+/* Highlight the table header */
+[id$="productionMovementTable"] .sapMListTblHeaderCell {
+    background: #fff3b8;
+    border-bottom: 1px solid #d5dadd;
+}
+
+[id$="productionMovementTable"] .sapMListTblHeaderCell .sapMText {
+    color: #1d2d3e;
+    font-weight: 700;
+    white-space: normal;
+}
+
+/* Keep numeric Production values readable */
+[id$="productionMovementTable"] .sapMObjectNumber {
+    width: 100%;
+    text-align: right;
+}
+
+[id$="productionMovementTable"] .sapMObjectNumberText {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Make the generated TOTAL row more prominent */
+[id$="productionMovementTable"] .sapMLIBHighlightSuccess {
+    background-color: #d9ead3;
+}
+
+/* End columns should remain visually distinct */
+[id$="productionCumulativeColumn"],
+[id$="productionNetTotalColumn"] {
+    background: #f7f9fa;
+}
+
+/* Tablet: two KPI cards per row */
+@media (max-width: 1100px) {
+    .productionKpiCard {
+        width: 49% !important;
+    }
+}
+
+/* Phone: one KPI card per row */
+@media (max-width: 750px) {
+    .productionKpiCard {
+        width: 100% !important;
+    }
+
+    [id$="productionTableHeader"] {
+        align-items: flex-start !important;
+    }
+
+    [id$="productionPlantStatus"] {
+        margin-top: 0.5rem;
+    }
+}

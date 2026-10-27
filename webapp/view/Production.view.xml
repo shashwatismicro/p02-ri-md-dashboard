@@ -1,0 +1,235 @@
+<mvc:View
+    controllerName="com.oswal.managementcockpit.managementcockpit.controller.Production"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <VBox
+    id="productionModuleContent"
+    width="100%"
+    busy="{production>/busy}"
+    busyIndicatorDelay="0"
+    class="sapUiMediumMarginTop">
+
+        <HBox
+            id="productionModuleHeader"
+            width="100%"
+            justifyContent="SpaceBetween"
+            alignItems="Center"
+            wrap="Wrap"
+            class="sapUiSmallMarginBottom">
+
+            <VBox id="productionModuleTitleBox">
+                <Title
+                    id="productionModuleTitle"
+                    text="Production"
+                    level="H2" />
+
+                <Text
+                    id="productionModuleSubtitle"
+                    text="Net Casting Movement Monitoring in Metric Tons"
+                    class="sapUiTinyMarginTop" />
+            </VBox>
+
+            <ObjectStatus
+    id="productionDataStatus"
+    text="{production>/statusText}"
+    state="{production>/statusState}" />
+        </HBox>
+
+        <!-- Placeholder Production KPIs -->
+        <HBox
+            id="productionKpiRow"
+            width="100%"
+            wrap="Wrap"
+            justifyContent="SpaceBetween"
+            items="{production>/kpis}">
+
+            <VBox
+                width="24%"
+                class="productionKpiCard sapUiContentPadding sapUiTinyMarginBottom">
+
+                <Title
+                    text="{production>title}"
+                    level="H4" />
+
+                <ObjectNumber
+                    number="{production>value}"
+                    emphasized="true"
+                    class="sapUiSmallMarginTop" />
+
+                <ObjectStatus
+                    text="{production>status}"
+                    state="None"
+                    class="sapUiTinyMarginTop" />
+            </VBox>
+        </HBox>
+
+        <!-- Casting Movement Table -->
+        <VBox
+            id="productionTablePanel"
+            width="100%"
+            class="sapUiContentPadding sapUiSmallMarginTop sapUiShadowLevel1">
+
+            <HBox
+                id="productionTableHeader"
+                width="100%"
+                justifyContent="SpaceBetween"
+                alignItems="Center"
+                wrap="Wrap"
+                class="sapUiSmallMarginBottom">
+
+                <VBox id="productionTableTitleBox">
+                    <Title
+                        id="productionTableTitle"
+                        text="Net Casting Movement Monitoring"
+                        level="H3" />
+
+                    <Text
+                        id="productionTableDateRange"
+                        text="{production>/dateRangeText}"
+                        class="sapUiTinyMarginTop" />
+                </VBox>
+
+                <ObjectStatus
+                    id="productionPlantStatus"
+                    text="{production>/plantLabel}"
+                    state="Information" />
+            </HBox>
+
+            <ScrollContainer
+                id="productionTableScrollContainer"
+                width="100%"
+                horizontal="true"
+                vertical="false"
+                focusable="true">
+
+                <Table
+                    id="productionMovementTable"
+                    width="100%"
+                    fixedLayout="false"
+                    growing="false"
+                    noDataText="No Production data available"
+                    items="{production>/rows}">
+
+                    <columns>
+                        <Column
+                            id="productionCategoryColumn"
+                            width="10rem"
+                            hAlign="Begin">
+                            <Text text="Category" />
+                        </Column>
+
+                        <Column
+                            id="productionCumulativeColumn"
+                            width="9rem"
+                            hAlign="End">
+                            <Text text="Cumulative Value" />
+                        </Column>
+
+                        <Column
+                            id="productionDay1Column"
+                            width="8rem"
+                            hAlign="End">
+                            <Text text="{production>/columnDates/0/label}" />
+                        </Column>
+
+                        <Column
+                            id="productionDay2Column"
+                            width="8rem"
+                            hAlign="End">
+                            <Text text="{production>/columnDates/1/label}" />
+                        </Column>
+
+                        <Column
+                            id="productionDay3Column"
+                            width="8rem"
+                            hAlign="End">
+                            <Text text="{production>/columnDates/2/label}" />
+                        </Column>
+
+                        <Column
+                            id="productionDay4Column"
+                            width="8rem"
+                            hAlign="End">
+                            <Text text="{production>/columnDates/3/label}" />
+                        </Column>
+
+                        <Column
+                            id="productionDay5Column"
+                            width="8rem"
+                            hAlign="End">
+                            <Text text="{production>/columnDates/4/label}" />
+                        </Column>
+
+                        <Column
+                            id="productionDay6Column"
+                            width="8rem"
+                            hAlign="End">
+                            <Text text="{production>/columnDates/5/label}" />
+                        </Column>
+
+                        <Column
+                            id="productionDay7Column"
+                            width="8rem"
+                            hAlign="End">
+                            <Text text="{production>/columnDates/6/label}" />
+                        </Column>
+
+                        <Column
+                            id="productionNetTotalColumn"
+                            width="9rem"
+                            hAlign="End">
+                            <Text text="Net Total" />
+                        </Column>
+                    </columns>
+
+                    <items>
+                        <ColumnListItem
+                            type="Inactive"
+                            highlight="{production>highlight}">
+                            <cells>
+                                <Text text="{production>category}" />
+
+                                <ObjectNumber
+                                    number="{production>cumulativeValue}"
+                                    emphasized="{production>isTotal}" />
+
+                                <ObjectNumber
+                                    number="{production>day1}"
+                                    emphasized="{production>isTotal}" />
+
+                                <ObjectNumber
+                                    number="{production>day2}"
+                                    emphasized="{production>isTotal}" />
+
+                                <ObjectNumber
+                                    number="{production>day3}"
+                                    emphasized="{production>isTotal}" />
+
+                                <ObjectNumber
+                                    number="{production>day4}"
+                                    emphasized="{production>isTotal}" />
+
+                                <ObjectNumber
+                                    number="{production>day5}"
+                                    emphasized="{production>isTotal}" />
+
+                                <ObjectNumber
+                                    number="{production>day6}"
+                                    emphasized="{production>isTotal}" />
+
+                                <ObjectNumber
+                                    number="{production>day7}"
+                                    emphasized="{production>isTotal}" />
+
+                                <ObjectNumber
+                                    number="{production>netTotal}"
+                                    emphasized="{production>isTotal}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </ScrollContainer>
+        </VBox>
+    </VBox>
+</mvc:View>
