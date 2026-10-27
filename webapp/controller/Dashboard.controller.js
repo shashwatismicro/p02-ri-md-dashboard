@@ -2,12 +2,14 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageToast",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
+    "sap/ui/model/FilterOperator",
+    "sap/ui/model/json/JSONModel"
 ], (
     Controller,
     MessageToast,
     Filter,
-    FilterOperator
+    FilterOperator,
+    JSONModel
 ) => {
     "use strict";
 
@@ -16,6 +18,56 @@ sap.ui.define([
         {
             onInit() {
                 const oToday = new Date();
+                this.getView().setModel(
+    new JSONModel({
+        customers: []
+    }),
+    "topSales"
+);
+
+this.getView().setModel(
+    new JSONModel({
+        customers: []
+    }),
+    "topRevenue"
+);
+
+this.getView().setModel(
+    new JSONModel({
+        months: []
+    }),
+    "monthlyRevenue"
+);
+this.getView().setModel(
+    new JSONModel({
+        buckets: [],
+        totalAmountCr: 0,
+        totalLabel: "Total AR",
+        totalBills: 0
+    }),
+    "receivablesAgeing"
+);
+
+this.getView().setModel(
+    new JSONModel({
+        buckets: [],
+        totalAmountCr: 0,
+        totalLabel: "Total AP",
+        totalBills: 0
+    }),
+    "payablesAgeing"
+);
+
+this.getView().setModel(
+    new JSONModel({
+        segments: [],
+        totalAmountCr: 0,
+        totalLabel: "Total Revenue",
+        exportRevenueCr: 0,
+        domesticRevenueCr: 0
+    }),
+    "exportDomesticRevenue"
+);
 
                 const iCurrentFiscalYear =
                     oToday.getMonth() + 1 >= 4
@@ -39,14 +91,31 @@ sap.ui.define([
                  * Live loading is attempted automatically.
                  * Until the client-100 proxy/destination is configured,
                  * the local preview may show a service-loading message.
-                 
+                 */
+                
+                
+            },
+                        onAfterRendering() {
+                if (this._bInitialDashboardLoadStarted) {
+                    return;
+                }
+
+                this._bInitialDashboardLoadStarted = true;
+
+                const oToday = new Date();
+
+                const iCurrentFiscalYear =
+                    oToday.getMonth() + 1 >= 4
+                        ? oToday.getFullYear()
+                        : oToday.getFullYear() - 1;
+
                 this._loadDashboardData(
                     iCurrentFiscalYear,
                     oToday.getMonth() + 1
-                ); */
+                );
             },
 
-            async onApplyFilters() {
+                        async onApplyFilters() {
                 const sCompanyCode =
                     this.byId("companyCodeSelect").getSelectedKey();
 
@@ -57,53 +126,54 @@ sap.ui.define([
                     this.byId("fiscalYearSelect").getSelectedKey()
                 );
 
-                const iPeriod = Number(
-                    this.byId("periodSelect").getSelectedKey()
-                );
-
-                const oPeriodEndDate = this._getPeriodEndDate(
-                    iFiscalYear,
-                    iPeriod
-                );
+                const sPeriod =
+                    this.byId("periodSelect").getSelectedKey();
 
                 const oToday = new Date();
 
-                /*
-                 * Compare at month level so that the current month
-                 * remains selectable even before month-end.
-                 */
-                const oSelectedMonth = new Date(
-                    oPeriodEndDate.getFullYear(),
-                    oPeriodEndDate.getMonth(),
-                    1
-                );
+                if (sPeriod !== "ALL") {
+                    const iPeriod = Number(sPeriod);
 
-                const oCurrentMonth = new Date(
-                    oToday.getFullYear(),
-                    oToday.getMonth(),
-                    1
-                );
+                    const oPeriodEndDate =
+                        this._getPeriodEndDate(
+                            iFiscalYear,
+                            iPeriod
+                        );
 
-                if (oSelectedMonth > oCurrentMonth) {
-                    MessageToast.show(
-                        "Future periods cannot be selected because revenue is not yet available."
+                    const oSelectedMonth = new Date(
+                        oPeriodEndDate.getFullYear(),
+                        oPeriodEndDate.getMonth(),
+                        1
                     );
-                    return;
+
+                    const oCurrentMonth = new Date(
+                        oToday.getFullYear(),
+                        oToday.getMonth(),
+                        1
+                    );
+
+                    if (oSelectedMonth > oCurrentMonth) {
+                        MessageToast.show(
+                            "Future periods cannot be selected because data is not yet available."
+                        );
+                        return;
+                    }
+
+                    this._setRevenueMonthVisibility(
+                        iFiscalYear,
+                        oPeriodEndDate
+                    );
+                } else {
+                    const oFiscalYearEnd =
+                        this._getFiscalYearEndDate(
+                            iFiscalYear
+                        );
+
+                    this._setRevenueMonthVisibility(
+                        iFiscalYear,
+                        oFiscalYearEnd
+                    );
                 }
-
-                /*
-                 * If the current period is selected, use today as the
-                 * cutoff/key date rather than a future month-end date.
-                 */
-                const oEffectiveKeyDate =
-                    oPeriodEndDate > oToday
-                        ? oToday
-                        : oPeriodEndDate;
-
-                this._setRevenueMonthVisibility(
-                    iFiscalYear,
-                    oEffectiveKeyDate
-                );
 
                 const sPlantText =
                     sPlant === "ALL"
@@ -116,166 +186,607 @@ sap.ui.define([
                 const sPeriodText =
                     oSelectedPeriodItem
                         ? oSelectedPeriodItem.getText()
-                        : String(iPeriod);
+                        : sPeriod;
 
                 this.byId("dashboardCompanyText").setText(
                     `Company Code: ${sCompanyCode} | Plant: ${sPlantText} | FY ${iFiscalYear} | Period: ${sPeriodText}`
                 );
 
                 /*
-                 * Sales and Revenue use Fiscal Year, Period,
-                 * Company Code and Plant.
-                 *
-                 * AR and AP use Company Code, Profit Center/Plant,
-                 * and the derived key date.
-                 *
-                 * AR and AP deliberately do not receive any
-                 * accounting-document Fiscal Year filter.
-                 */
+                * Selected month:
+                * Sales, Revenue and Top Customers use that month only.
+                * Month-wise Revenue uses April through the selected month.
+                * AR/AP use all historical outstanding items as of month-end.
+                *
+                * Period All:
+                * Sales, Revenue and Top Customers use the complete fiscal year.
+                * Month-wise Revenue uses the complete April-March fiscal year.
+                * AR/AP use all historical outstanding items as of fiscal-year-end.
+                *
+                * No accounting-document Fiscal Year filter is applied to AR/AP.
+                */
                 await this._loadDashboardData(
                     iFiscalYear,
-                    iPeriod
+                    sPeriod
                 );
             },
 
-            async _loadDashboardData(
+async _loadDashboardData(
+    iFiscalYear,
+    vPeriod
+) {
+    const oView =
+        this.getView();
+
+    const oModel =
+        oView.getModel();
+
+    if (!oModel) {
+        MessageToast.show(
+            "Management Cockpit OData model is not available."
+        );
+        return;
+    }
+
+    /*
+     * Every dashboard load receives its own sequence number.
+     * If filters change while an older request is still running,
+     * results from that older request are ignored.
+     */
+    this._iDashboardLoadSequence =
+        (this._iDashboardLoadSequence || 0) + 1;
+
+    const iLoadSequence =
+        this._iDashboardLoadSequence;
+
+    const sCompanyCode =
+        this.byId(
+            "companyCodeSelect"
+        ).getSelectedKey();
+
+    const sPlant =
+        this.byId(
+            "plantSelect"
+        ).getSelectedKey();
+
+    const sPeriod =
+        String(vPeriod).padStart(
+            2,
+            "0"
+        );
+
+    const oFiscalYearStart =
+        this._getFiscalYearStartDate(
+            iFiscalYear
+        );
+
+    const oFiscalYearEnd =
+        this._getFiscalYearEndDate(
+            iFiscalYear
+        );
+
+    let oKpiStartDate;
+    let oKpiEndDate;
+    let oTrendEndDate;
+    let oAccountingKeyDate;
+
+    if (sPeriod === "ALL") {
+        /*
+         * Period All:
+         * Sales KPIs, Top Customers and trend use
+         * the complete selected fiscal year.
+         *
+         * AR/AP use all historical outstanding items
+         * as of fiscal-year-end.
+         */
+        oKpiStartDate =
+            oFiscalYearStart;
+
+        oKpiEndDate =
+            oFiscalYearEnd;
+
+        oTrendEndDate =
+            oFiscalYearEnd;
+
+        oAccountingKeyDate =
+            oFiscalYearEnd;
+    } else {
+        const iPeriod =
+            Number(sPeriod);
+
+        /*
+         * Sales KPIs and Top Customers use
+         * the selected month only.
+         */
+        oKpiStartDate =
+            this._getPeriodStartDate(
                 iFiscalYear,
                 iPeriod
-            ) {
-                const oView = this.getView();
-                const oModel = oView.getModel();
+            );
 
-                if (!oModel) {
-                    MessageToast.show(
-                        "Management Cockpit OData model is not available."
-                    );
-                    return;
-                }
+        oKpiEndDate =
+            this._getPeriodEndDate(
+                iFiscalYear,
+                iPeriod
+            );
 
-                const sCompanyCode =
-                    this.byId("companyCodeSelect").getSelectedKey();
+        /*
+         * Month-wise Revenue uses fiscal-year
+         * start through the selected month.
+         */
+        oTrendEndDate =
+            oKpiEndDate;
 
-                const sPlant =
-                    this.byId("plantSelect").getSelectedKey();
+        /*
+         * AR/AP use all historical outstanding items
+         * as of the selected month's final date.
+         */
+        oAccountingKeyDate =
+            oKpiEndDate;
+    }
 
-                const oToday = new Date();
+    const sKpiStartDate =
+        this._formatDateForOData(
+            oKpiStartDate
+        );
 
-                const oFiscalYearStart = new Date(
-                    iFiscalYear,
-                    3,
-                    1
+    const sKpiEndDate =
+        this._formatDateForOData(
+            oKpiEndDate
+        );
+
+    const sFiscalYearStart =
+        this._formatDateForOData(
+            oFiscalYearStart
+        );
+
+    const sTrendEndDate =
+        this._formatDateForOData(
+            oTrendEndDate
+        );
+
+    const sAccountingKeyDate =
+        this._formatDateForOData(
+            oAccountingKeyDate
+        );
+
+    const aSalesFilters = [
+        new Filter(
+            "CompanyCode",
+            FilterOperator.EQ,
+            sCompanyCode
+        ),
+        new Filter(
+            "BillingDocumentDate",
+            FilterOperator.BT,
+            sFiscalYearStart,
+            sTrendEndDate
+        )
+    ];
+
+    if (sPlant !== "ALL") {
+        aSalesFilters.push(
+            new Filter(
+                "Plant",
+                FilterOperator.EQ,
+                sPlant
+            )
+        );
+    }
+
+    /*
+     * Only the properties required by the dashboard
+     * are requested from the Sales entity.
+     */
+    const aSelectedSalesProperties = [
+        "BillingDocument",
+        "BillingDocumentItem",
+        "BillingDocumentDate",
+        "BillingDocumentType",
+        "DocumentReferenceID",
+        "SoldToParty",
+        "SoldToPartyName",
+        "BasicValue",
+        "GrossWeightInKG"
+    ];
+
+    oView.setBusy(true);
+
+    /*
+     * Start Sales, AR and AP requests together.
+     * Accounting pagination no longer waits for Sales,
+     * and Sales rendering no longer waits for accounting.
+     */
+    const oSalesPromise =
+        this._requestCollection(
+            "/Sales",
+            aSalesFilters,
+            aSelectedSalesProperties
+        );
+
+    const oAccountingPromise =
+        Promise.all([
+            this._requestParameterizedCollection(
+                "AccountsReceivable",
+                sAccountingKeyDate,
+                sCompanyCode,
+                sPlant
+            ),
+            this._requestParameterizedCollection(
+                "AccountsPayable",
+                sAccountingKeyDate,
+                sCompanyCode,
+                sPlant
+            )
+        ]);
+
+    let bSalesLoaded = false;
+    let bAccountingLoaded = false;
+
+    try {
+        const aTrendSalesRawData =
+            await oSalesPromise;
+
+        /*
+         * Ignore this result if the user applied
+         * another filter selection while it loaded.
+         */
+        if (
+            iLoadSequence !==
+            this._iDashboardLoadSequence
+        ) {
+            return;
+        }
+
+        /*
+         * Apply the common Management Cockpit
+         * Sales eligibility rule once.
+         *
+         * Excluded:
+         * - Billing Type F8
+         * - Billing Type JSTO
+         * - Billing Type S1 where Reference starts IU
+         */
+        const aTrendSalesData =
+            aTrendSalesRawData.filter(
+                (oRow) =>
+                    this._isEligibleSalesRow(
+                        oRow
+                    )
+            );
+
+        /*
+         * The one Sales request covers April through
+         * the selected trend cutoff.
+         *
+         * For a selected month, derive the KPI-month
+         * rows locally.
+         *
+         * For Period All, the complete eligible
+         * fiscal-year array is reused.
+         */
+        const aKpiSalesData =
+            sPeriod === "ALL"
+                ? aTrendSalesData
+                : aTrendSalesData.filter(
+                    (oRow) => {
+                        const sBillingDate =
+                            String(
+                                oRow.BillingDocumentDate ||
+                                ""
+                            ).substring(
+                                0,
+                                10
+                            );
+
+                        return (
+                            sBillingDate >=
+                                sKpiStartDate &&
+                            sBillingDate <=
+                                sKpiEndDate
+                        );
+                    }
                 );
 
-                const oSelectedPeriodEnd =
-                    this._getPeriodEndDate(
-                        iFiscalYear,
-                        iPeriod
-                    );
+        this._updateSalesAndRevenueKPIs(
+            aKpiSalesData
+        );
 
-                const oEffectiveKeyDate =
-                    oSelectedPeriodEnd > oToday
-                        ? oToday
-                        : oSelectedPeriodEnd;
+        this._updateTopCustomers(
+            aKpiSalesData
+        );
 
-                const sFiscalYearStart =
-                    this._formatDateForOData(
-                        oFiscalYearStart
-                    );
+        this._updateMonthlyRevenue(
+            aTrendSalesData,
+            iFiscalYear,
+            oTrendEndDate
+        );
 
-                const sEffectiveKeyDate =
-                    this._formatDateForOData(
-                        oEffectiveKeyDate
-                    );
+        this._updateExportDomesticRevenue(
+            aKpiSalesData
+        );
 
-                const aSalesFilters = [
-                    new Filter(
-                        "CompanyCode",
-                        FilterOperator.EQ,
-                        sCompanyCode
-                    ),
-                    new Filter(
-                        "BillingDocumentDate",
-                        FilterOperator.BT,
-                        sFiscalYearStart,
-                        sEffectiveKeyDate
-                    )
-                ];
+        bSalesLoaded = true;
 
-                if (sPlant !== "ALL") {
-                    aSalesFilters.push(
-                        new Filter(
-                            "Plant",
-                            FilterOperator.EQ,
-                            sPlant
-                        )
-                    );
+        /*
+         * Release the page-level busy state as soon
+         * as the Sales section is usable.
+         *
+         * AR/AP continue loading in the background.
+         */
+        oView.setBusy(false);
+
+        console.info(
+            "Sales dashboard data loaded:",
+            {
+                loadSequence:
+                    iLoadSequence,
+                rawSalesRows:
+                    aTrendSalesRawData.length,
+                eligibleTrendRows:
+                    aTrendSalesData.length,
+                eligibleKpiRows:
+                    aKpiSalesData.length,
+                excludedRows:
+                    aTrendSalesRawData.length -
+                    aTrendSalesData.length
+            }
+        );
+    } catch (oSalesError) {
+        if (
+            iLoadSequence ===
+            this._iDashboardLoadSequence
+        ) {
+            console.error(
+                "Management Cockpit Sales loading failed:",
+                oSalesError
+            );
+
+            MessageToast.show(
+                "Sales dashboard data could not be loaded. Check the browser console for details."
+            );
+
+            oView.setBusy(false);
+        }
+    }
+
+    try {
+        const [
+            aReceivableData,
+            aPayableData
+        ] =
+            await oAccountingPromise;
+
+        /*
+         * Do not allow an older filter request
+         * to overwrite newer dashboard results.
+         */
+        if (
+            iLoadSequence !==
+            this._iDashboardLoadSequence
+        ) {
+            return;
+        }
+
+        this._updateAccountingKPIs(
+            aReceivableData,
+            aPayableData
+        );
+
+        bAccountingLoaded = true;
+
+        console.info(
+            "Accounting dashboard data loaded:",
+            {
+                loadSequence:
+                    iLoadSequence,
+                receivableRows:
+                    aReceivableData.length,
+                payableRows:
+                    aPayableData.length,
+                accountingKeyDate:
+                    sAccountingKeyDate
+            }
+        );
+    } catch (oAccountingError) {
+        if (
+            iLoadSequence ===
+            this._iDashboardLoadSequence
+        ) {
+            console.error(
+                "Management Cockpit AR/AP loading failed:",
+                oAccountingError
+            );
+
+            MessageToast.show(
+                "AR/AP data could not be loaded. Sales data may still be available."
+            );
+        }
+    } finally {
+        if (
+            iLoadSequence ===
+            this._iDashboardLoadSequence
+        ) {
+            oView.setBusy(false);
+        }
+    }
+
+    if (
+        iLoadSequence !==
+        this._iDashboardLoadSequence
+    ) {
+        return;
+    }
+
+    if (
+        bSalesLoaded &&
+        bAccountingLoaded
+    ) {
+        this._setLiveDataStatuses();
+
+        MessageToast.show(
+            "Live Management Cockpit data loaded successfully."
+        );
+    }
+},
+            async _requestParameterizedCollection(
+    sEntityName,
+    sKeyDate,
+    sCompanyCode,
+    sPlant
+) {
+    const oModel =
+        this.getView().getModel();
+
+    const sServiceRoot =
+        new URL(
+            oModel.getServiceUrl(),
+            window.location.origin
+        ).toString();
+
+    const aFilterParts = [
+        `CompanyCode eq '${this._escapeODataString(
+            sCompanyCode
+        )}'`
+    ];
+
+    if (sPlant !== "ALL") {
+        aFilterParts.push(
+            `ProfitCenter eq '${this._escapeODataString(
+                sPlant
+            )}'`
+        );
+    }
+
+    const sFilter =
+        encodeURIComponent(
+            aFilterParts.join(" and ")
+        );
+
+    let sRequestUrl =
+        new URL(
+            `${sEntityName}/${sKeyDate}/Set` +
+            `?$filter=${sFilter}`,
+            sServiceRoot
+        ).toString();
+
+    const aAllResults = [];
+
+    while (sRequestUrl) {
+        const oResponse =
+            await fetch(
+                sRequestUrl,
+                {
+                    method: "GET",
+                    headers: {
+                        Accept:
+                            "application/json"
+                    },
+                    credentials:
+                        "same-origin"
                 }
+            );
 
-                oView.setBusy(true);
+        if (!oResponse.ok) {
+            const sErrorText =
+                await oResponse.text();
 
-                try {
-                    const [
-                        aSalesData,
-                        aReceivableData,
-                        aPayableData
-                    ] = await Promise.all([
-                        this._requestCollection(
-                            "/Sales",
-                            aSalesFilters
-                        ),
-                        this._requestCollection(
-                            `/AccountsReceivable/${sEffectiveKeyDate}/Set`,
-                            this._getAccountingFilters(
-                                sCompanyCode,
-                                sPlant
-                            )
-                        ),
-                        this._requestCollection(
-                            `/AccountsPayable/${sEffectiveKeyDate}/Set`,
-                            this._getAccountingFilters(
-                                sCompanyCode,
-                                sPlant
-                            )
-                        )
-                    ]);
+            throw new Error(
+                `${sEntityName} request failed with HTTP ` +
+                `${oResponse.status}: ${sErrorText}`
+            );
+        }
 
-                    this._updateSalesAndRevenueKPIs(
-                        aSalesData
-                    );
+        const oResponseData =
+            await oResponse.json();
 
-                    this._updateAccountingKPIs(
-                        aReceivableData,
-                        aPayableData
-                    );
+        if (
+            Array.isArray(
+                oResponseData.value
+            )
+        ) {
+            aAllResults.push(
+                ...oResponseData.value
+            );
+        }
 
-                    this._updateTopCustomers(
-                        aSalesData
-                    );
+        const sNextLink =
+            oResponseData[
+                "@odata.nextLink"
+            ] || "";
 
-                    this._updateMonthlyRevenue(
-                        aSalesData,
-                        iFiscalYear,
-                        oEffectiveKeyDate
-                    );
+        sRequestUrl =
+            sNextLink
+                ? new URL(
+                    sNextLink,
+                    sServiceRoot
+                ).toString()
+                : "";
+    }
 
-                    this._setLiveDataStatuses();
+    return aAllResults;
+},
+_escapeODataString(
+    sValue
+) {
+    return String(sValue).replace(
+        /'/g,
+        "''"
+    );
+},
 
-                    MessageToast.show(
-                        "Live Management Cockpit data loaded successfully."
-                    );
-                } catch (oError) {
-                    console.error(
-                        "Management Cockpit data loading failed:",
-                        oError
-                    );
+_isEligibleSalesRow(
+    oRow
+) {
+    const sBillingDocumentType =
+        String(
+            oRow.BillingDocumentType || ""
+        ).trim();
 
-                    MessageToast.show(
-                        "Live data could not be loaded. Check the client-100 destination or proxy configuration."
-                    );
-                } finally {
-                    oView.setBusy(false);
-                }
-            },
+    const sDocumentReferenceID =
+        String(
+            oRow.DocumentReferenceID || ""
+        ).trim();
+
+    return !(
+        sBillingDocumentType === "F8" ||
+        sBillingDocumentType === "JSTO" ||
+        (
+            sBillingDocumentType === "S1" &&
+            sDocumentReferenceID.startsWith("IU")
+        )
+    );
+},
+
+_isExportRevenueRow(
+    oRow
+) {
+    const sBillingDocumentType =
+        String(
+            oRow.BillingDocumentType || ""
+        ).trim();
+
+    const sBillingDocument =
+        String(
+            oRow.BillingDocument || ""
+        ).trim();
+
+    const sDocumentReferenceID =
+        String(
+            oRow.DocumentReferenceID || ""
+        ).trim();
+
+    return (
+        (
+            sBillingDocumentType === "F2" &&
+            sBillingDocument.startsWith("EX")
+        ) ||
+        (
+            sBillingDocumentType === "S1" &&
+            sDocumentReferenceID.startsWith("EX")
+        )
+    );
+},
 
             _getAccountingFilters(
                 sCompanyCode,
@@ -313,51 +824,69 @@ sap.ui.define([
             },
 
             async _requestCollection(
-                sPath,
-                aFilters = []
-            ) {
-                const oModel = this.getView().getModel();
+    sPath,
+    aFilters = [],
+    aSelectedProperties = []
+) {
+    const oModel =
+        this.getView().getModel();
 
-                const oListBinding = oModel.bindList(
-                    sPath,
-                    null,
-                    null,
-                    aFilters,
-                    {
-                        "$count": true
-                    }
+    const mParameters = {
+        "$count": true
+    };
+
+    if (
+        Array.isArray(aSelectedProperties) &&
+        aSelectedProperties.length > 0
+    ) {
+        mParameters.$select =
+            aSelectedProperties.join(",");
+    }
+
+    const oListBinding =
+        oModel.bindList(
+            sPath,
+            null,
+            null,
+            aFilters,
+            mParameters
+        );
+
+    const aAllResults = [];
+    const iPageSize = 1000;
+    let iStart = 0;
+    let bMoreData = true;
+
+    try {
+        while (bMoreData) {
+            const aContexts =
+                await oListBinding.requestContexts(
+                    iStart,
+                    iPageSize
                 );
 
-                const aAllResults = [];
-                const iPageSize = 1000;
-                let iStart = 0;
-                let bMoreData = true;
+            const aPageData =
+                aContexts.map(
+                    (oContext) =>
+                        oContext.getObject()
+                );
 
-                while (bMoreData) {
-                    const aContexts =
-                        await oListBinding.requestContexts(
-                            iStart,
-                            iPageSize
-                        );
+            aAllResults.push(
+                ...aPageData
+            );
 
-                    const aPageData =
-                        aContexts.map(
-                            (oContext) =>
-                                oContext.getObject()
-                        );
+            bMoreData =
+                aContexts.length ===
+                iPageSize;
 
-                    aAllResults.push(...aPageData);
+            iStart += iPageSize;
+        }
 
-                    bMoreData =
-                        aContexts.length === iPageSize;
-
-                    iStart += iPageSize;
-                }
-
-                oListBinding.destroy();
-
-                return aAllResults;
-            },
+        return aAllResults;
+    } finally {
+        oListBinding.destroy();
+    }
+},
 
             _updateSalesAndRevenueKPIs(
                 aSalesData
@@ -380,7 +909,7 @@ sap.ui.define([
                         (nTotal, oRow) =>
                             nTotal +
                             this._toNumber(
-                                oRow.NetAmount
+                                oRow.BasicValue
                             ),
                         0
                     );
@@ -407,129 +936,594 @@ sap.ui.define([
                 );
             },
 
-            _updateAccountingKPIs(
-                aReceivableData,
-                aPayableData
-            ) {
-                const nTotalReceivable =
-                    aReceivableData.reduce(
-                        (nTotal, oRow) =>
-                            nTotal +
-                            this._toNumber(
-                                oRow.AccountsReceivable
-                            ),
-                        0
-                    );
+            _updateExportDomesticRevenue(
+    aSalesData
+) {
+    const nTotalRevenue =
+        aSalesData.reduce(
+            (nTotal, oRow) =>
+                nTotal +
+                this._toNumber(
+                    oRow.BasicValue
+                ),
+            0
+        );
 
-                const nTotalPayable =
-                    aPayableData.reduce(
-                        (nTotal, oRow) =>
-                            nTotal +
-                            this._toNumber(
-                                oRow.AccountsPayable
-                            ),
-                        0
-                    );
-
-                /*
-                 * Existing signed values are summed directly.
-                 * No additional sign reversal is applied.
-                 */
-                this.byId(
-                    "accountsReceivableValue"
-                ).setNumber(
-                    this._formatCrores(
-                        nTotalReceivable
+    const nExportRevenue =
+        aSalesData.reduce(
+            (nTotal, oRow) => {
+                if (
+                    !this._isExportRevenueRow(
+                        oRow
                     )
-                );
+                ) {
+                    return nTotal;
+                }
 
-                this.byId(
-                    "accountsReceivableValue"
-                ).setUnit(
-                    "Cr"
-                );
-
-                this.byId(
-                    "accountsPayableValue"
-                ).setNumber(
-                    this._formatCrores(
-                        nTotalPayable
+                return (
+                    nTotal +
+                    this._toNumber(
+                        oRow.BasicValue
                     )
-                );
-
-                this.byId(
-                    "accountsPayableValue"
-                ).setUnit(
-                    "Cr"
                 );
             },
+            0
+        );
+
+    const nDomesticRevenue =
+        nTotalRevenue -
+        nExportRevenue;
+
+    const oRevenueSplitModel =
+        this.getView().getModel(
+            "exportDomesticRevenue"
+        );
+
+    oRevenueSplitModel.setProperty(
+        "/segments",
+        [
+            {
+                category: "Export",
+                revenueAmount:
+                    nExportRevenue,
+                revenueCr:
+                    Number(
+                        (
+                            nExportRevenue /
+                            10000000
+                        ).toFixed(3)
+                    )
+            },
+            {
+                category: "Domestic",
+                revenueAmount:
+                    nDomesticRevenue,
+                revenueCr:
+                    Number(
+                        (
+                            nDomesticRevenue /
+                            10000000
+                        ).toFixed(3)
+                    )
+            }
+        ]
+    );
+
+    oRevenueSplitModel.setProperty(
+        "/totalAmountCr",
+        this._formatCrores(
+            nTotalRevenue
+        )
+    );
+
+    oRevenueSplitModel.setProperty(
+        "/totalLabel",
+        "Total Revenue"
+    );
+
+    oRevenueSplitModel.setProperty(
+        "/exportRevenueCr",
+        Number(
+            (
+                nExportRevenue /
+                10000000
+            ).toFixed(3)
+        )
+    );
+
+    oRevenueSplitModel.setProperty(
+        "/domesticRevenueCr",
+        Number(
+            (
+                nDomesticRevenue /
+                10000000
+            ).toFixed(3)
+        )
+    );
+
+    console.info(
+        "Revenue split:",
+        {
+            totalRevenue:
+                nTotalRevenue,
+            exportRevenue:
+                nExportRevenue,
+            domesticRevenue:
+                nDomesticRevenue,
+            reconciliationDifference:
+                nTotalRevenue -
+                (
+                    nExportRevenue +
+                    nDomesticRevenue
+                )
+        }
+    );
+    this._configureAgeingCharts();
+},
+
+            _updateAccountingKPIs(
+    aReceivableData,
+    aPayableData
+) {
+    const nTotalReceivable =
+        aReceivableData.reduce(
+            (nTotal, oRow) =>
+                nTotal +
+                this._toNumber(
+                    oRow.AccountsReceivable
+                ),
+            0
+        );
+
+    const nTotalPayable =
+        aPayableData.reduce(
+            (nTotal, oRow) =>
+                nTotal +
+                this._toNumber(
+                    oRow.AccountsPayable
+                ),
+            0
+        );
+
+    /*
+     * Signed Due Amount values are summed directly.
+     * No sign reversal or absolute-value conversion
+     * is applied to the AR/AP KPI totals.
+     */
+    this.byId(
+        "accountsReceivableValue"
+    ).setNumber(
+        this._formatCrores(
+            nTotalReceivable
+        )
+    );
+
+    this.byId(
+        "accountsReceivableValue"
+    ).setUnit(
+        "Cr"
+    );
+
+    this.byId(
+        "accountsPayableValue"
+    ).setNumber(
+        this._formatCrores(
+            nTotalPayable
+        )
+    );
+
+    this.byId(
+        "accountsPayableValue"
+    ).setUnit(
+        "Cr"
+    );
+
+    /*
+     * Doughnut slice proportions are based on
+     * bill counts, not Due Amount values.
+     */
+    this._updateAgeingModel(
+        aReceivableData,
+        nTotalReceivable,
+        "receivablesAgeing",
+        "Total AR"
+    );
+
+    this._updateAgeingModel(
+        aPayableData,
+        nTotalPayable,
+        "payablesAgeing",
+        "Total AP"
+    );
+    this._configureAgeingCharts();
+},
+
+_updateAgeingModel(
+    aAgeingData,
+    nTotalAmount,
+    sModelName,
+    sTotalLabel
+) {
+    const aBuckets = [
+        {
+            slab: "0–30 Days",
+            minimum: 0,
+            maximum: 30,
+            billCount: 0
+        },
+        {
+            slab: "31–60 Days",
+            minimum: 31,
+            maximum: 60,
+            billCount: 0
+        },
+        {
+            slab: "61–90 Days",
+            minimum: 61,
+            maximum: 90,
+            billCount: 0
+        },
+        {
+            slab: "91 Days and Above",
+            minimum: 91,
+            maximum: Number.POSITIVE_INFINITY,
+            billCount: 0
+        }
+    ];
+
+    aAgeingData.forEach((oRow) => {
+        const nDueDays =
+            Number(oRow.DueDays);
+
+        /*
+         * Invalid or negative Due Days records
+         * are excluded from the doughnut only.
+         * Due Days = 0 is included in 0–30 Days.
+         */
+        if (
+            !Number.isFinite(nDueDays) ||
+            nDueDays < 0
+        ) {
+            return;
+        }
+
+        const oMatchingBucket =
+            aBuckets.find(
+                (oBucket) =>
+                    nDueDays >=
+                        oBucket.minimum &&
+                    nDueDays <=
+                        oBucket.maximum
+            );
+
+        if (oMatchingBucket) {
+            oMatchingBucket.billCount += 1;
+        }
+    });
+
+    const iTotalBills =
+        aBuckets.reduce(
+            (iTotal, oBucket) =>
+                iTotal +
+                oBucket.billCount,
+            0
+        );
+
+    const aChartBuckets =
+        aBuckets.map((oBucket) => ({
+            slab: oBucket.slab,
+            billCount: oBucket.billCount,
+            percentage:
+                iTotalBills > 0
+                    ? Number(
+                        (
+                            oBucket.billCount /
+                            iTotalBills *
+                            100
+                        ).toFixed(1)
+                    )
+                    : 0,
+            legendText:
+                `${oBucket.slab}: ` +
+                `${this._formatNumber(
+                    oBucket.billCount,
+                    0
+                )} bills`
+        }));
+
+    const oAgeingModel =
+        this.getView().getModel(
+            sModelName
+        );
+
+    oAgeingModel.setProperty(
+        "/buckets",
+        aChartBuckets
+    );
+
+    oAgeingModel.setProperty(
+        "/totalAmountCr",
+        this._formatCrores(
+            nTotalAmount
+        )
+    );
+
+    oAgeingModel.setProperty(
+        "/totalLabel",
+        sTotalLabel
+    );
+
+    oAgeingModel.setProperty(
+        "/totalBills",
+        iTotalBills
+    );
+},
+
+_configureAgeingCharts() {
+    const oReceivablesChart =
+        this.byId(
+            "receivablesAgeingChart"
+        );
+
+    const oPayablesChart =
+        this.byId(
+            "payablesAgeingChart"
+        );
+
+    const oRevenueSplitChart =
+        this.byId(
+            "exportDomesticRevenueChart"
+        );
+
+    const oCommonAgeingProperties = {
+        title: {
+            visible: false
+        },
+
+        legend: {
+            visible: true,
+            position: "bottom",
+            label: {
+                visible: true
+            }
+        },
+
+        plotArea: {
+            colorPalette: [
+                "#0A6ED1",
+                "#2E7D32",
+                "#E9730C",
+                "#BB0000"
+            ],
+
+            dataLabel: {
+                visible: true,
+                type: "percentage",
+                formatString: "0.0%"
+            },
+
+            isDonut: true
+        },
+
+        interaction: {
+            selectability: {
+                mode: "NONE"
+            }
+        }
+    };
+
+    const oRevenueSplitProperties = {
+        title: {
+            visible: false
+        },
+
+        legend: {
+            visible: true,
+            position: "bottom",
+            label: {
+                visible: true
+            }
+        },
+
+        plotArea: {
+            /*
+             * Export = blue
+             * Domestic = green
+             */
+            colorPalette: [
+                "#0A6ED1",
+                "#2E7D32"
+            ],
+
+            dataLabel: {
+                visible: true,
+                type: "percentage",
+                formatString: "0.0%"
+            },
+
+            isDonut: true
+        },
+
+        interaction: {
+            selectability: {
+                mode: "NONE"
+            }
+        }
+    };
+
+    if (oReceivablesChart) {
+        oReceivablesChart.setVizProperties(
+            oCommonAgeingProperties
+        );
+    }
+
+    if (oPayablesChart) {
+        oPayablesChart.setVizProperties(
+            oCommonAgeingProperties
+        );
+    }
+
+    if (oRevenueSplitChart) {
+        oRevenueSplitChart.setVizProperties(
+            oRevenueSplitProperties
+        );
+    }
+},
 
             _updateTopCustomers(
-                aSalesData
-            ) {
-                const mCustomers = {};
+    aSalesData
+) {
+    const mCustomers = {};
 
-                aSalesData.forEach((oRow) => {
-                    const sCustomerKey =
-                        oRow.SoldToParty ||
-                        "UNKNOWN";
+    aSalesData.forEach((oRow) => {
+        const sCustomerKey =
+            oRow.SoldToParty || "UNKNOWN";
 
-                    if (!mCustomers[sCustomerKey]) {
-                        mCustomers[sCustomerKey] = {
-                            customer:
-                                sCustomerKey,
-                            customerName:
-                                oRow.SoldToPartyName ||
-                                sCustomerKey,
-                            salesMT: 0,
-                            revenue: 0
-                        };
-                    }
+        if (!mCustomers[sCustomerKey]) {
+            const sCustomerName =
+                oRow.SoldToPartyName ||
+                sCustomerKey;
 
-                    mCustomers[sCustomerKey].salesMT +=
-                        this._toNumber(
-                            oRow.GrossWeightInKG
-                        ) / 1000;
+            mCustomers[sCustomerKey] = {
+                customer: sCustomerKey,
+                customerName: sCustomerName,
+                customerDisplay:
+    this._formatCustomerChartLabel(
+        sCustomerKey,
+        sCustomerName
+    ),
+                salesMT: 0,
+                revenue: 0
+            };
+        }
 
-                    mCustomers[sCustomerKey].revenue +=
-                        this._toNumber(
-                            oRow.NetAmount
-                        );
-                });
+        mCustomers[sCustomerKey].salesMT +=
+            this._toNumber(
+                oRow.GrossWeightInKG
+            ) / 1000;
 
-                const aCustomers =
-                    Object.values(mCustomers);
+        mCustomers[sCustomerKey].revenue +=
+            this._toNumber(
+                oRow.BasicValue
+            );
+    });
 
-                const aTopSales =
-                    [...aCustomers]
-                        .sort(
-                            (oFirst, oSecond) =>
-                                oSecond.salesMT -
-                                oFirst.salesMT
-                        )
-                        .slice(0, 4);
+    const aCustomers =
+        Object.values(mCustomers);
 
-                const aTopRevenue =
-                    [...aCustomers]
-                        .sort(
-                            (oFirst, oSecond) =>
-                                oSecond.revenue -
-                                oFirst.revenue
-                        )
-                        .slice(0, 4);
+    const aTopSales =
+        [...aCustomers]
+            .sort(
+                (oFirst, oSecond) =>
+                    oSecond.salesMT -
+                    oFirst.salesMT
+            )
+            .slice(0, 4)
+            .reverse()
+            .map((oCustomer) => ({
+                customer:
+                    oCustomer.customer,
+                customerName:
+                    oCustomer.customerName,
+                customerDisplay:
+                    oCustomer.customerDisplay,
+                salesMT:
+                    Number(
+                        oCustomer.salesMT.toFixed(3)
+                    )
+            }));
 
-                this._updateCustomerPanel(
-                    aTopSales,
-                    "sales",
-                    "salesMT"
-                );
+    const aTopRevenue =
+        [...aCustomers]
+            .sort(
+                (oFirst, oSecond) =>
+                    oSecond.revenue -
+                    oFirst.revenue
+            )
+            .slice(0, 4)
+            .reverse()
+            .map((oCustomer) => ({
+                customer:
+                    oCustomer.customer,
+                customerName:
+                    oCustomer.customerName,
+                customerDisplay:
+                    oCustomer.customerDisplay,
+                revenueCr:
+                    Number(
+                        (
+                            oCustomer.revenue /
+                            10000000
+                        ).toFixed(3)
+                    )
+            }));
 
-                this._updateCustomerPanel(
-                    aTopRevenue,
-                    "revenue",
-                    "revenue"
-                );
-            },
+    this.getView()
+        .getModel("topSales")
+        .setProperty(
+            "/customers",
+            aTopSales
+        );
+
+    this.getView()
+        .getModel("topRevenue")
+        .setProperty(
+            "/customers",
+            aTopRevenue
+        );
+
+    this._configureCustomerCharts();
+},
+
+_formatCustomerChartLabel(
+    sCustomerCode,
+    sCustomerName
+) {
+    const sCleanName =
+        String(sCustomerName || "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+    const iMaximumFirstLineLength = 34;
+
+    if (
+        sCleanName.length <=
+        iMaximumFirstLineLength
+    ) {
+        return `${sCustomerCode} - ${sCleanName}`;
+    }
+
+    let iSplitPosition =
+        sCleanName.lastIndexOf(
+            " ",
+            iMaximumFirstLineLength
+        );
+
+    if (iSplitPosition <= 0) {
+        iSplitPosition =
+            iMaximumFirstLineLength;
+    }
+
+    const sFirstLine =
+        sCleanName
+            .substring(
+                0,
+                iSplitPosition
+            )
+            .trim();
+
+    const sSecondLine =
+        sCleanName
+            .substring(
+                iSplitPosition
+            )
+            .trim();
+
+    return (
+        `${sCustomerCode} - ${sFirstLine}` +
+        `\n${sSecondLine}`
+    );
+},
 
             _updateCustomerPanel(
                 aCustomers,
@@ -634,109 +1628,303 @@ sap.ui.define([
             },
 
             _updateMonthlyRevenue(
-                aSalesData,
-                iFiscalYear,
-                oCutoffDate
-            ) {
-                const aFiscalMonths =
-                    this._getFiscalMonths(
-                        iFiscalYear
-                    );
+    aSalesData,
+    iFiscalYear,
+    oCutoffDate
+) {
+    const aFiscalMonths =
+        this._getFiscalMonths(
+            iFiscalYear
+        );
 
-                const mMonthlyRevenue = {};
+    const mMonthlyRevenue = {};
 
-                aFiscalMonths.forEach(
-                    (oFiscalMonth) => {
-                        mMonthlyRevenue[
-                            oFiscalMonth.key
-                        ] = 0;
-                    }
+    aFiscalMonths.forEach(
+        (oFiscalMonth) => {
+            mMonthlyRevenue[
+                oFiscalMonth.key
+            ] = 0;
+        }
+    );
+
+    aSalesData.forEach((oRow) => {
+        if (!oRow.BillingDocumentDate) {
+            return;
+        }
+
+        const oBillingDate = new Date(
+            `${oRow.BillingDocumentDate}T00:00:00`
+        );
+
+        if (
+            Number.isNaN(
+                oBillingDate.getTime()
+            )
+        ) {
+            return;
+        }
+
+        const sMonthKey =
+            `${oBillingDate.getFullYear()}-${String(
+                oBillingDate.getMonth() + 1
+            ).padStart(2, "0")}`;
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                mMonthlyRevenue,
+                sMonthKey
+            )
+        ) {
+            mMonthlyRevenue[sMonthKey] +=
+                this._toNumber(
+                    oRow.BasicValue
                 );
+        }
+    });
 
-                aSalesData.forEach((oRow) => {
-                    if (!oRow.BillingDocumentDate) {
-                        return;
-                    }
+    const oCutoffMonth = new Date(
+        oCutoffDate.getFullYear(),
+        oCutoffDate.getMonth(),
+        1
+    );
 
-                    const oBillingDate =
-                        new Date(
-                            `${oRow.BillingDocumentDate}T00:00:00`
-                        );
-
-                    if (Number.isNaN(
-                        oBillingDate.getTime()
-                    )) {
-                        return;
-                    }
-
-                    const sMonthKey =
-                        `${oBillingDate.getFullYear()}-${String(
-                            oBillingDate.getMonth() + 1
-                        ).padStart(2, "0")}`;
-
-                    if (
-                        Object.prototype.hasOwnProperty.call(
-                            mMonthlyRevenue,
-                            sMonthKey
-                        )
-                    ) {
-                        mMonthlyRevenue[sMonthKey] +=
-                            this._toNumber(
-                                oRow.NetAmount
-                            );
-                    }
-                });
-
-                const nMaximumRevenue =
-                    Math.max(
-                        ...Object.values(
-                            mMonthlyRevenue
-                        ).map(
-                            (nValue) =>
-                                Math.abs(nValue)
-                        ),
+    const aMonthlyChartData =
+        aFiscalMonths
+            .filter((oFiscalMonth) => {
+                const oFiscalMonthDate =
+                    new Date(
+                        oFiscalMonth.year,
+                        oFiscalMonth.month - 1,
                         1
                     );
 
-                aFiscalMonths.forEach(
-                    (oFiscalMonth) => {
-                        const nRevenue =
+                return (
+                    oFiscalMonthDate <=
+                    oCutoffMonth
+                );
+            })
+            .map((oFiscalMonth) => ({
+                monthLabel:
+                    this._getMonthLabel(
+                        oFiscalMonth.month
+                    ),
+                revenueCr:
+                    Number(
+                        (
                             mMonthlyRevenue[
                                 oFiscalMonth.key
-                            ];
+                            ] / 10000000
+                        ).toFixed(3)
+                    )
+            }));
 
-                        const nPercentage =
-                            Math.min(
-                                Math.abs(nRevenue) /
-                                    nMaximumRevenue *
-                                    100,
-                                100
-                            );
+    this.getView()
+        .getModel("monthlyRevenue")
+        .setProperty(
+            "/months",
+            aMonthlyChartData
+        );
 
-                        const oRevenueBar =
-                            this.byId(
-                                oFiscalMonth.barId
-                            );
+    this._configureMonthlyRevenueChart();
+},
 
-                        if (oRevenueBar) {
-                            oRevenueBar.setPercentValue(
-                                nPercentage
-                            );
+_getMonthLabel(
+    iMonth
+) {
+    const aMonthLabels = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
+    ];
 
-                            oRevenueBar.setDisplayValue(
-                                `₹ ${this._formatCrores(
-                                    nRevenue
-                                )} Cr`
-                            );
-                        }
-                    }
-                );
+    return aMonthLabels[
+        iMonth - 1
+    ];
+},
 
-                this._setRevenueMonthVisibility(
-                    iFiscalYear,
-                    oCutoffDate
-                );
+_configureCustomerCharts() {
+    const oSalesChart =
+        this.byId("topCustomersSalesChart");
+
+    const oRevenueChart =
+        this.byId("topCustomersRevenueChart");
+
+    const oCommonProperties = {
+    title: {
+        visible: false
+    },
+
+    legend: {
+        visible: false
+    },
+
+    plotArea: {
+        colorPalette: [
+            "#0A6ED1"
+        ],
+
+        dataPointSize: {
+            min: 16,
+            max: 24
+        },
+
+        dataLabel: {
+            visible: true,
+            position: "outside",
+            hideWhenOverlap: false
+        },
+
+        gridline: {
+            visible: true
+        }
+    },
+
+    categoryAxis: {
+        title: {
+            visible: false
+        },
+
+        label: {
+            visible: true
+        }
+    },
+
+    valueAxis: {
+        title: {
+            visible: false
+        },
+
+        label: {
+            visible: true
+        }
+    },
+
+    interaction: {
+        zoom: {
+            enableScrolling: false,
+            enableZoom: false
+        },
+
+        selectability: {
+            mode: "NONE"
+        }
+    }
+};
+
+    if (oSalesChart) {
+        oSalesChart.setVizProperties({
+            ...oCommonProperties,
+            valueAxis: {
+                title: {
+                    visible: true,
+                    text: "Sales (MT)"
+                },
+                label: {
+                    visible: true,
+                    formatString: "0.000"
+                }
             },
+            plotArea: {
+                ...oCommonProperties.plotArea,
+                dataLabel: {
+                    visible: true,
+                    position: "outside",
+                    hideWhenOverlap: false,
+                    formatString: "0.000"
+                }
+            }
+        });
+    }
+
+    if (oRevenueChart) {
+        oRevenueChart.setVizProperties({
+            ...oCommonProperties,
+            valueAxis: {
+                title: {
+                    visible: true,
+                    text: "Revenue (₹ Cr)"
+                },
+                label: {
+                    visible: true,
+                    formatString: "0.000"
+                }
+            },
+            plotArea: {
+                ...oCommonProperties.plotArea,
+                dataLabel: {
+                    visible: true,
+                    position: "outside",
+                    hideWhenOverlap: false,
+                    formatString: "0.000"
+                }
+            }
+        });
+    }
+},
+
+_configureMonthlyRevenueChart() {
+    const oMonthlyRevenueChart =
+        this.byId("monthlyRevenueChart");
+
+    if (!oMonthlyRevenueChart) {
+        return;
+    }
+
+    oMonthlyRevenueChart.setVizProperties({
+        title: {
+            visible: false
+        },
+        legend: {
+            visible: false
+        },
+        plotArea: {
+            colorPalette: [
+                "#0A6ED1"
+            ],
+            dataLabel: {
+                visible: true,
+                position: "outside",
+                hideWhenOverlap: false,
+                formatString: "0.000"
+            },
+            gridline: {
+                visible: true
+            }
+        },
+        categoryAxis: {
+            title: {
+                visible: false
+            },
+            label: {
+                visible: true
+            }
+        },
+        valueAxis: {
+            title: {
+                visible: true,
+                text: "Revenue (₹ Cr)"
+            },
+            label: {
+                visible: true,
+                formatString: "0.000"
+            }
+        },
+        interaction: {
+            selectability: {
+                mode: "NONE"
+            }
+        }
+    });
+},
 
             _setLiveDataStatuses() {
                 this.byId(
@@ -794,35 +1982,57 @@ sap.ui.define([
                 );
             },
 
-            _getPeriodEndDate(
-                iFiscalYear,
-                iPeriod
-            ) {
-                /*
-                 * Fiscal year starts in April.
-                 *
-                 * April to December belong to the fiscal-year
-                 * start year.
-                 *
-                 * January to March belong to the following
-                 * calendar year.
-                 */
-                const iCalendarYear =
-                    iPeriod >= 4
-                        ? iFiscalYear
-                        : iFiscalYear + 1;
+            _getFiscalYearStartDate(
+    iFiscalYear
+) {
+    return new Date(
+        iFiscalYear,
+        3,
+        1
+    );
+},
 
-                /*
-                 * JavaScript month values are zero-based.
-                 * Day zero of the following month gives the
-                 * final day of the selected month.
-                 */
-                return new Date(
-                    iCalendarYear,
-                    iPeriod,
-                    0
-                );
-            },
+_getFiscalYearEndDate(
+    iFiscalYear
+) {
+    return new Date(
+        iFiscalYear + 1,
+        3,
+        0
+    );
+},
+
+_getPeriodStartDate(
+    iFiscalYear,
+    iPeriod
+) {
+    const iCalendarYear =
+        iPeriod >= 4
+            ? iFiscalYear
+            : iFiscalYear + 1;
+
+    return new Date(
+        iCalendarYear,
+        iPeriod - 1,
+        1
+    );
+},
+
+            _getPeriodEndDate(
+    iFiscalYear,
+    iPeriod
+) {
+    const iCalendarYear =
+        iPeriod >= 4
+            ? iFiscalYear
+            : iFiscalYear + 1;
+
+    return new Date(
+        iCalendarYear,
+        iPeriod,
+        0
+    );
+},
 
             _getFiscalMonths(
                 iFiscalYear
@@ -1003,7 +2213,7 @@ sap.ui.define([
                 return Number.isFinite(nValue)
                     ? nValue
                     : 0;
-            },
+            }, 
 
             _formatNumber(
                 nValue,

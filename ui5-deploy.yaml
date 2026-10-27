@@ -21,7 +21,7 @@ builder:
           name: ZMGMTCOCKPIT
           description: Management Cockpit
           package: ZMANAGEMENT_COCKPIT
-          transport: BZ8K901693
+          transport: BZ8K901781
         exclude:
           - /test/
           - /localService/

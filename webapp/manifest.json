@@ -23,6 +23,20 @@
           "odataVersion": "4.0"
         }
       }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "ManagementCockpit-display": {
+          "semanticObject": "ManagementCockpit",
+          "action": "display",
+          "title": "{{ManagementCockpit-display.flpTitle}}",
+          "subTitle": "{{ManagementCockpit-display.flpSubtitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
     }
   },
   "sap.ui": {
@@ -47,7 +61,8 @@
       "minUI5Version": "1.152.0",
       "libs": {
         "sap.m": {},
-        "sap.ui.core": {}
+        "sap.ui.core": {},
+        "sap.viz": {}
       }
     },
     "contentDensities": {
@@ -88,8 +103,7 @@
         "type": "View",
         "viewType": "XML",
         "path": "com.oswal.managementcockpit.managementcockpit.view",
-        "async": true,
-        "viewPath": "com.oswal.managementcockpit.managementcockpit.view"
+        "async": true
       },
       "routes": [
         {

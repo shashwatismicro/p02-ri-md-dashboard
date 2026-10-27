@@ -119,9 +119,12 @@
     font-weight: 600;
 }
 
-/* Top customer and monthly revenue panels */
+/* Dashboard chart panels */
 [id$="topCustomersSalesPanel"],
 [id$="topCustomersRevenuePanel"],
+[id$="receivablesAgeingPanel"],
+[id$="payablesAgeingPanel"],
+[id$="exportDomesticRevenuePanel"],
 [id$="monthlyRevenuePanel"] {
     background: #ffffff;
     border: 1px solid #e3e8ee;
@@ -138,6 +141,18 @@
     border-left: 0.3rem solid #107e3e;
 }
 
+[id$="receivablesAgeingPanel"] {
+    border-left: 0.3rem solid #e9730c;
+}
+
+[id$="payablesAgeingPanel"] {
+    border-left: 0.3rem solid #bb0000;
+}
+
+[id$="exportDomesticRevenuePanel"] {
+    border-left: 0.3rem solid #0a6ed1;
+}
+
 [id$="monthlyRevenuePanel"] {
     border-left: 0.3rem solid #6c5ce7;
     margin-bottom: 2rem;
@@ -146,10 +161,14 @@
 /* Panel titles */
 [id$="topCustomersSalesTitle"],
 [id$="topCustomersRevenueTitle"],
+[id$="receivablesAgeingTitle"],
+[id$="payablesAgeingTitle"],
+[id$="exportDomesticRevenueTitle"],
 [id$="monthlyRevenueTitle"] {
     color: #1d2d3e;
     font-weight: 700;
 }
+
 
 /* Progress bars */
 [id$="topCustomersSalesPanel"] .sapMPI,
@@ -199,7 +218,10 @@
     [id$="totalSalesCard"],
     [id$="totalRevenueCard"],
     [id$="accountsReceivableCard"],
-    [id$="accountsPayableCard"] {
+    [id$="accountsPayableCard"],
+    [id$="receivablesAgeingPanel"],
+    [id$="payablesAgeingPanel"],
+    [id$="exportDomesticRevenuePanel"] {
         width: 49% !important;
     }
 }
@@ -210,11 +232,58 @@
     [id$="accountsReceivableCard"],
     [id$="accountsPayableCard"],
     [id$="topCustomersSalesPanel"],
-    [id$="topCustomersRevenuePanel"] {
+    [id$="topCustomersRevenuePanel"],
+    [id$="receivablesAgeingPanel"],
+    [id$="payablesAgeingPanel"],
+    [id$="exportDomesticRevenuePanel"] {
         width: 100% !important;
     }
 
     [id$="dashboardFilterBar"] {
         justify-content: flex-start !important;
     }
+}
+
+/* Three equal doughnut cards on desktop */
+[id$="receivablesAgeingPanel"],
+[id$="payablesAgeingPanel"],
+[id$="exportDomesticRevenuePanel"] {
+    width: 32%;
+}
+
+.ageingDonutContainer {
+    position: relative;
+    min-height: 20rem;
+}
+
+.ageingDonutChart {
+    position: relative;
+    z-index: 1;
+}
+
+.ageingDonutCenterContent {
+    position: absolute;
+    top: 43%;
+    left: 50%;
+    z-index: 2;
+    width: 8rem;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    text-align: center;
+}
+
+.ageingDonutCenterContent .sapMObjectNumber {
+    width: 100%;
+    text-align: center;
+}
+
+.ageingDonutCenterContent .sapMObjectNumberText,
+.ageingDonutCenterContent .sapMObjectNumberUnit {
+    font-weight: 700;
+}
+
+.ageingDonutCenterContent .sapMText {
+    width: 100%;
+    font-weight: 600;
+    text-align: center;
 }

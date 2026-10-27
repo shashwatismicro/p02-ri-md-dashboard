@@ -2,7 +2,10 @@
     controllerName="com.oswal.managementcockpit.managementcockpit.controller.Dashboard"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:core="sap.ui.core">
+    xmlns:core="sap.ui.core"
+    xmlns:viz="sap.viz.ui5.controls"
+    xmlns:viz.data="sap.viz.ui5.data"
+    xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
 
     <Page
         id="page"
@@ -176,6 +179,7 @@
                                             selectedKey="08">
 
                                             <items>
+                                                <core:Item id="periodAll" key="ALL" text="All" />
                                                 <core:Item id="periodApr" key="04" text="Apr" />
                                                 <core:Item id="periodMay" key="05" text="May" />
                                                 <core:Item id="periodJun" key="06" text="Jun" />
@@ -350,312 +354,512 @@
                                     </VBox>
                                 </HBox>
 
-                                <!-- Top Customer Panels -->
-                                <HBox
-                                    id="customerChartRow"
-                                    width="100%"
-                                    wrap="Wrap"
-                                    justifyContent="SpaceBetween"
-                                    class="sapUiSmallMarginTop">
+                                <!-- Top Customer Charts -->
+<HBox
+    id="customerChartRow"
+    width="100%"
+    wrap="Wrap"
+    justifyContent="SpaceBetween"
+    class="sapUiSmallMarginTop">
 
-                                    <VBox
-                                        id="topCustomersSalesPanel"
-                                        width="49%"
-                                        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
+    <!-- Top 4 Customers by Sales -->
+    <VBox
+        id="topCustomersSalesPanel"
+        width="49%"
+        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
 
-                                        <Title
-                                            id="topCustomersSalesTitle"
-                                            text="Top 4 Customers by Total Sales"
-                                            level="H3"
-                                            class="sapUiSmallMarginBottom" />
+        <HBox
+            id="topCustomersSalesHeader"
+            width="100%"
+            justifyContent="SpaceBetween"
+            alignItems="Center"
+            class="sapUiSmallMarginBottom">
 
-                                        <Text
-                                            id="salesCustomer1Name"
-                                            text="Tata Motors"
-                                            class="sapUiTinyMarginBottom" />
+            <Title
+                id="topCustomersSalesTitle"
+                text="Top 4 Customers by Total Sales"
+                level="H3" />
 
-                                        <ProgressIndicator
-                                            id="salesCustomer1Bar"
-                                            percentValue="100"
-                                            displayValue="315.4 MT"
-                                            state="Information"
-                                            class="sapUiTinyMarginBottom" />
+            <ObjectStatus
+                id="topCustomersSalesDemoStatus"
+                text="Loading"
+                state="Information" />
+        </HBox>
 
-                                        <Text
-                                            id="salesCustomer2Name"
-                                            text="Maruti Suzuki"
-                                            class="sapUiTinyMarginBottom" />
+        <viz:VizFrame
+            id="topCustomersSalesChart"
+            width="100%"
+            height="20rem"
+            vizType="bar"
+            uiConfig="{applicationSet:'fiori'}">
 
-                                        <ProgressIndicator
-                                            id="salesCustomer2Bar"
-                                            percentValue="82"
-                                            displayValue="258.7 MT"
-                                            state="Information"
-                                            class="sapUiTinyMarginBottom" />
+            <viz:dataset>
+                <viz.data:FlattenedDataset
+                    id="topCustomersSalesDataset"
+                    data="{topSales>/customers}">
 
-                                        <Text
-                                            id="salesCustomer3Name"
-                                            text="Hero MotoCorp"
-                                            class="sapUiTinyMarginBottom" />
+                    <viz.data:dimensions>
+                        <viz.data:DimensionDefinition
+                            id="topCustomersSalesCustomerDimension"
+                            name="Customer"
+                            value="{topSales>customerDisplay}" />
+                    </viz.data:dimensions>
 
-                                        <ProgressIndicator
-                                            id="salesCustomer3Bar"
-                                            percentValue="64"
-                                            displayValue="201.9 MT"
-                                            state="Information"
-                                            class="sapUiTinyMarginBottom" />
+                    <viz.data:measures>
+                        <viz.data:MeasureDefinition
+                            id="topCustomersSalesMeasure"
+                            name="Sales"
+                            value="{topSales>salesMT}" />
+                    </viz.data:measures>
+                </viz.data:FlattenedDataset>
+            </viz:dataset>
 
-                                        <Text
-                                            id="salesCustomer4Name"
-                                            text="Ashok Leyland"
-                                            class="sapUiTinyMarginBottom" />
+            <viz:feeds>
+                <viz.feeds:FeedItem
+                    id="topCustomersSalesValueFeed"
+                    uid="valueAxis"
+                    type="Measure"
+                    values="Sales" />
 
-                                        <ProgressIndicator
-                                            id="salesCustomer4Bar"
-                                            percentValue="47"
-                                            displayValue="148.3 MT"
-                                            state="Information" />
+                <viz.feeds:FeedItem
+                    id="topCustomersSalesCategoryFeed"
+                    uid="categoryAxis"
+                    type="Dimension"
+                    values="Customer" />
+            </viz:feeds>
+        </viz:VizFrame>
+    </VBox>
 
-                                        <ObjectStatus
-                                            id="topCustomersSalesDemoStatus"
-                                            text="Demonstration values"
-                                            state="Information"
-                                            class="sapUiSmallMarginTop" />
-                                    </VBox>
+    <!-- Top 4 Customers by Revenue -->
+    <VBox
+        id="topCustomersRevenuePanel"
+        width="49%"
+        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
 
-                                    <VBox
-                                        id="topCustomersRevenuePanel"
-                                        width="49%"
-                                        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
+        <HBox
+            id="topCustomersRevenueHeader"
+            width="100%"
+            justifyContent="SpaceBetween"
+            alignItems="Center"
+            class="sapUiSmallMarginBottom">
 
-                                        <Title
-                                            id="topCustomersRevenueTitle"
-                                            text="Top 4 Customers by Total Revenue"
-                                            level="H3"
-                                            class="sapUiSmallMarginBottom" />
+            <Title
+                id="topCustomersRevenueTitle"
+                text="Top 4 Customers by Total Revenue"
+                level="H3" />
 
-                                        <Text
-                                            id="revenueCustomer1Name"
-                                            text="Maruti Suzuki"
-                                            class="sapUiTinyMarginBottom" />
+            <ObjectStatus
+                id="topCustomersRevenueDemoStatus"
+                text="Loading"
+                state="Information" />
+        </HBox>
 
-                                        <ProgressIndicator
-                                            id="revenueCustomer1Bar"
-                                            percentValue="100"
-                                            displayValue="₹ 26.5 Cr"
-                                            state="Information"
-                                            class="sapUiTinyMarginBottom" />
+        <viz:VizFrame
+            id="topCustomersRevenueChart"
+            width="100%"
+            height="20rem"
+            vizType="bar"
+            uiConfig="{applicationSet:'fiori'}">
 
-                                        <Text
-                                            id="revenueCustomer2Name"
-                                            text="Tata Motors"
-                                            class="sapUiTinyMarginBottom" />
+            <viz:dataset>
+                <viz.data:FlattenedDataset
+                    id="topCustomersRevenueDataset"
+                    data="{topRevenue>/customers}">
 
-                                        <ProgressIndicator
-                                            id="revenueCustomer2Bar"
-                                            percentValue="69"
-                                            displayValue="₹ 18.2 Cr"
-                                            state="Information"
-                                            class="sapUiTinyMarginBottom" />
+                    <viz.data:dimensions>
+                        <viz.data:DimensionDefinition
+                            id="topCustomersRevenueCustomerDimension"
+                            name="Customer"
+                            value="{topRevenue>customerDisplay}" />
+                    </viz.data:dimensions>
 
-                                        <Text
-                                            id="revenueCustomer3Name"
-                                            text="Hero MotoCorp"
-                                            class="sapUiTinyMarginBottom" />
+                    <viz.data:measures>
+                        <viz.data:MeasureDefinition
+                            id="topCustomersRevenueMeasure"
+                            name="Revenue"
+                            value="{topRevenue>revenueCr}" />
+                    </viz.data:measures>
+                </viz.data:FlattenedDataset>
+            </viz:dataset>
 
-                                        <ProgressIndicator
-                                            id="revenueCustomer3Bar"
-                                            percentValue="53"
-                                            displayValue="₹ 14.1 Cr"
-                                            state="Information"
-                                            class="sapUiTinyMarginBottom" />
+            <viz:feeds>
+                <viz.feeds:FeedItem
+                    id="topCustomersRevenueValueFeed"
+                    uid="valueAxis"
+                    type="Measure"
+                    values="Revenue" />
 
-                                        <Text
-                                            id="revenueCustomer4Name"
-                                            text="Ashok Leyland"
-                                            class="sapUiTinyMarginBottom" />
+                <viz.feeds:FeedItem
+                    id="topCustomersRevenueCategoryFeed"
+                    uid="categoryAxis"
+                    type="Dimension"
+                    values="Customer" />
+            </viz:feeds>
+        </viz:VizFrame>
+    </VBox>
+</HBox>
 
-                                        <ProgressIndicator
-                                            id="revenueCustomer4Bar"
-                                            percentValue="37"
-                                            displayValue="₹ 9.8 Cr"
-                                            state="Information" />
+<!-- Receivables, Payables and Revenue Split Doughnut Charts -->
+<HBox
+    id="ageingChartRow"
+    width="100%"
+    wrap="Wrap"
+    justifyContent="SpaceBetween"
+    alignItems="Stretch"
+    class="sapUiSmallMarginTop">
 
-                                        <ObjectStatus
-                                            id="topCustomersRevenueDemoStatus"
-                                            text="Demonstration values"
-                                            state="Information"
-                                            class="sapUiSmallMarginTop" />
-                                    </VBox>
-                                </HBox>
+    <!-- Receivables Ageing -->
+    <VBox
+        id="receivablesAgeingPanel"
+        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
 
-                                <!-- Month-wise Revenue -->
-                                <VBox
-                                    id="monthlyRevenuePanel"
-                                    width="100%"
-                                    class="sapUiContentPadding sapUiSmallMarginTop sapUiShadowLevel1">
+        <HBox
+            id="receivablesAgeingHeader"
+            width="100%"
+            justifyContent="SpaceBetween"
+            alignItems="Center"
+            class="sapUiSmallMarginBottom">
 
-                                    <HBox
-                                        id="monthlyRevenueHeader"
-                                        width="100%"
-                                        justifyContent="SpaceBetween"
-                                        alignItems="Center"
-                                        class="sapUiSmallMarginBottom">
+            <Title
+                id="receivablesAgeingTitle"
+                text="Receivables Ageing"
+                level="H3" />
 
-                                        <Title
-                                            id="monthlyRevenueTitle"
-                                            text="Month-wise Total Revenue"
-                                            level="H3" />
+            <ObjectStatus
+                id="receivablesAgeingStatus"
+                text="Bill count by Due Days"
+                state="Information" />
+        </HBox>
 
-                                        <ObjectStatus
-                                            id="monthlyRevenueDemoStatus"
-                                            text="Demonstration values"
-                                            state="Information" />
-                                    </HBox>
+        <VBox
+            id="receivablesAgeingChartContainer"
+            width="100%"
+            alignItems="Stretch"
+            class="ageingDonutContainer">
 
-                                    <Text
-                                        id="monthAprLabel"
-                                        text="Apr"
-                                        class="sapUiTinyMarginBottom" />
+            <viz:VizFrame
+                id="receivablesAgeingChart"
+                width="100%"
+                height="20rem"
+                vizType="donut"
+                uiConfig="{applicationSet:'fiori'}"
+                class="ageingDonutChart">
 
-                                    <ProgressIndicator
-                                        id="monthAprRevenue"
-                                        percentValue="58"
-                                        displayValue="₹ 78 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+                <viz:dataset>
+                    <viz.data:FlattenedDataset
+                        id="receivablesAgeingDataset"
+                        data="{receivablesAgeing>/buckets}">
 
-                                    <Text
-                                        id="monthMayLabel"
-                                        text="May"
-                                        class="sapUiTinyMarginBottom" />
+                        <viz.data:dimensions>
+                            <viz.data:DimensionDefinition
+                                id="receivablesAgeingSlabDimension"
+                                name="Due Days"
+                                value="{receivablesAgeing>legendText}" />
+                        </viz.data:dimensions>
 
-                                    <ProgressIndicator
-                                        id="monthMayRevenue"
-                                        percentValue="62"
-                                        displayValue="₹ 82 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+                        <viz.data:measures>
+                            <viz.data:MeasureDefinition
+                                id="receivablesAgeingBillCountMeasure"
+                                name="Bills"
+                                value="{receivablesAgeing>billCount}" />
+                        </viz.data:measures>
+                    </viz.data:FlattenedDataset>
+                </viz:dataset>
 
-                                    <Text
-                                        id="monthJunLabel"
-                                        text="Jun"
-                                        class="sapUiTinyMarginBottom" />
+                <viz:feeds>
+                    <viz.feeds:FeedItem
+                        id="receivablesAgeingSizeFeed"
+                        uid="size"
+                        type="Measure"
+                        values="Bills" />
 
-                                    <ProgressIndicator
-                                        id="monthJunRevenue"
-                                        percentValue="69"
-                                        displayValue="₹ 91 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+                    <viz.feeds:FeedItem
+                        id="receivablesAgeingColorFeed"
+                        uid="color"
+                        type="Dimension"
+                        values="Due Days" />
+                </viz:feeds>
+            </viz:VizFrame>
 
-                                    <Text
-                                        id="monthJulLabel"
-                                        text="Jul"
-                                        class="sapUiTinyMarginBottom" />
+            <VBox
+                id="receivablesAgeingCenterContent"
+                alignItems="Center"
+                justifyContent="Center"
+                class="ageingDonutCenterContent">
 
-                                    <ProgressIndicator
-                                        id="monthJulRevenue"
-                                        percentValue="74"
-                                        displayValue="₹ 98 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+                <ObjectNumber
+                    id="receivablesAgeingTotalValue"
+                    number="{receivablesAgeing>/totalAmountCr}"
+                    unit="Cr"
+                    emphasized="true" />
 
-                                    <Text
-                                        id="monthAugLabel"
-                                        text="Aug"
-                                        class="sapUiTinyMarginBottom" />
+                <Text
+                    id="receivablesAgeingTotalLabel"
+                    text="{receivablesAgeing>/totalLabel}"
+                    textAlign="Center"
+                    class="sapUiTinyMarginTop" />
+            </VBox>
+        </VBox>
+    </VBox>
 
-                                    <ProgressIndicator
-                                        id="monthAugRevenue"
-                                        percentValue="83"
-                                        displayValue="₹ 110 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+    <!-- Payables Ageing -->
+    <VBox
+        id="payablesAgeingPanel"
+        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
 
-                                    <Text
-                                        id="monthSepLabel"
-                                        text="Sep"
-                                        class="sapUiTinyMarginBottom" />
+        <HBox
+            id="payablesAgeingHeader"
+            width="100%"
+            justifyContent="SpaceBetween"
+            alignItems="Center"
+            class="sapUiSmallMarginBottom">
 
-                                    <ProgressIndicator
-                                        id="monthSepRevenue"
-                                        percentValue="89"
-                                        displayValue="₹ 118 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+            <Title
+                id="payablesAgeingTitle"
+                text="Payables Ageing"
+                level="H3" />
 
-                                    <Text
-                                        id="monthOctLabel"
-                                        text="Oct"
-                                        class="sapUiTinyMarginBottom" />
+            <ObjectStatus
+                id="payablesAgeingStatus"
+                text="Bill count by Due Days"
+                state="Information" />
+        </HBox>
 
-                                    <ProgressIndicator
-                                        id="monthOctRevenue"
-                                        percentValue="92"
-                                        displayValue="₹ 121 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+        <VBox
+            id="payablesAgeingChartContainer"
+            width="100%"
+            alignItems="Stretch"
+            class="ageingDonutContainer">
 
-                                    <Text
-                                        id="monthNovLabel"
-                                        text="Nov"
-                                        class="sapUiTinyMarginBottom" />
+            <viz:VizFrame
+                id="payablesAgeingChart"
+                width="100%"
+                height="20rem"
+                vizType="donut"
+                uiConfig="{applicationSet:'fiori'}"
+                class="ageingDonutChart">
 
-                                    <ProgressIndicator
-                                        id="monthNovRevenue"
-                                        percentValue="95"
-                                        displayValue="₹ 125 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+                <viz:dataset>
+                    <viz.data:FlattenedDataset
+                        id="payablesAgeingDataset"
+                        data="{payablesAgeing>/buckets}">
 
-                                    <Text
-                                        id="monthDecLabel"
-                                        text="Dec"
-                                        class="sapUiTinyMarginBottom" />
+                        <viz.data:dimensions>
+                            <viz.data:DimensionDefinition
+                                id="payablesAgeingSlabDimension"
+                                name="Due Days"
+                                value="{payablesAgeing>legendText}" />
+                        </viz.data:dimensions>
 
-                                    <ProgressIndicator
-                                        id="monthDecRevenue"
-                                        percentValue="72"
-                                        displayValue="₹ 95 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+                        <viz.data:measures>
+                            <viz.data:MeasureDefinition
+                                id="payablesAgeingBillCountMeasure"
+                                name="Bills"
+                                value="{payablesAgeing>billCount}" />
+                        </viz.data:measures>
+                    </viz.data:FlattenedDataset>
+                </viz:dataset>
 
-                                    <Text
-                                        id="monthJanLabel"
-                                        text="Jan"
-                                        class="sapUiTinyMarginBottom" />
+                <viz:feeds>
+                    <viz.feeds:FeedItem
+                        id="payablesAgeingSizeFeed"
+                        uid="size"
+                        type="Measure"
+                        values="Bills" />
 
-                                    <ProgressIndicator
-                                        id="monthJanRevenue"
-                                        percentValue="77"
-                                        displayValue="₹ 102 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+                    <viz.feeds:FeedItem
+                        id="payablesAgeingColorFeed"
+                        uid="color"
+                        type="Dimension"
+                        values="Due Days" />
+                </viz:feeds>
+            </viz:VizFrame>
 
-                                    <Text
-                                        id="monthFebLabel"
-                                        text="Feb"
-                                        class="sapUiTinyMarginBottom" />
+            <VBox
+                id="payablesAgeingCenterContent"
+                alignItems="Center"
+                justifyContent="Center"
+                class="ageingDonutCenterContent">
 
-                                    <ProgressIndicator
-                                        id="monthFebRevenue"
-                                        percentValue="81"
-                                        displayValue="₹ 107 Cr"
-                                        state="Information"
-                                        class="sapUiTinyMarginBottom" />
+                <ObjectNumber
+                    id="payablesAgeingTotalValue"
+                    number="{payablesAgeing>/totalAmountCr}"
+                    unit="Cr"
+                    emphasized="true" />
 
-                                    <Text
-                                        id="monthMarLabel"
-                                        text="Mar"
-                                        class="sapUiTinyMarginBottom" />
+                <Text
+                    id="payablesAgeingTotalLabel"
+                    text="{payablesAgeing>/totalLabel}"
+                    textAlign="Center"
+                    class="sapUiTinyMarginTop" />
+            </VBox>
+        </VBox>
+    </VBox>
 
-                                    <ProgressIndicator
-                                        id="monthMarRevenue"
-                                        percentValue="87"
-                                        displayValue="₹ 115 Cr"
-                                        state="Information" />
-                                </VBox>
+    <!-- Export and Domestic Revenue -->
+    <VBox
+        id="exportDomesticRevenuePanel"
+        class="sapUiContentPadding sapUiTinyMarginBottom sapUiShadowLevel1">
+
+        <HBox
+            id="exportDomesticRevenueHeader"
+            width="100%"
+            justifyContent="SpaceBetween"
+            alignItems="Center"
+            class="sapUiSmallMarginBottom">
+
+            <Title
+                id="exportDomesticRevenueTitle"
+                text="Export and Domestic Revenue"
+                level="H3" />
+
+            <ObjectStatus
+                id="exportDomesticRevenueStatus"
+                text="Revenue split"
+                state="Information" />
+        </HBox>
+
+        <VBox
+            id="exportDomesticRevenueChartContainer"
+            width="100%"
+            alignItems="Stretch"
+            class="ageingDonutContainer">
+
+            <viz:VizFrame
+                id="exportDomesticRevenueChart"
+                width="100%"
+                height="20rem"
+                vizType="donut"
+                uiConfig="{applicationSet:'fiori'}"
+                class="ageingDonutChart">
+
+                <viz:dataset>
+                    <viz.data:FlattenedDataset
+                        id="exportDomesticRevenueDataset"
+                        data="{exportDomesticRevenue>/segments}">
+
+                        <viz.data:dimensions>
+                            <viz.data:DimensionDefinition
+                                id="exportDomesticRevenueCategoryDimension"
+                                name="Revenue Type"
+                                value="{exportDomesticRevenue>category}" />
+                        </viz.data:dimensions>
+
+                        <viz.data:measures>
+                            <viz.data:MeasureDefinition
+                                id="exportDomesticRevenueMeasure"
+                                name="Revenue"
+                                value="{exportDomesticRevenue>revenueCr}" />
+                        </viz.data:measures>
+                    </viz.data:FlattenedDataset>
+                </viz:dataset>
+
+                <viz:feeds>
+                    <viz.feeds:FeedItem
+                        id="exportDomesticRevenueSizeFeed"
+                        uid="size"
+                        type="Measure"
+                        values="Revenue" />
+
+                    <viz.feeds:FeedItem
+                        id="exportDomesticRevenueColorFeed"
+                        uid="color"
+                        type="Dimension"
+                        values="Revenue Type" />
+                </viz:feeds>
+            </viz:VizFrame>
+
+            <VBox
+                id="exportDomesticRevenueCenterContent"
+                alignItems="Center"
+                justifyContent="Center"
+                class="ageingDonutCenterContent">
+
+                <ObjectNumber
+                    id="exportDomesticRevenueTotalValue"
+                    number="{exportDomesticRevenue>/totalAmountCr}"
+                    unit="Cr"
+                    emphasized="true" />
+
+                <Text
+                    id="exportDomesticRevenueTotalLabel"
+                    text="{exportDomesticRevenue>/totalLabel}"
+                    textAlign="Center"
+                    class="sapUiTinyMarginTop" />
+            </VBox>
+        </VBox>
+    </VBox>
+</HBox>
+
+                                <!-- Month-wise Revenue Chart -->
+<VBox
+    id="monthlyRevenuePanel"
+    width="100%"
+    class="sapUiContentPadding sapUiSmallMarginTop sapUiShadowLevel1">
+
+    <HBox
+        id="monthlyRevenueHeader"
+        width="100%"
+        justifyContent="SpaceBetween"
+        alignItems="Center"
+        class="sapUiSmallMarginBottom">
+
+        <Title
+            id="monthlyRevenueTitle"
+            text="Month-wise Total Revenue"
+            level="H3" />
+
+        <ObjectStatus
+            id="monthlyRevenueDemoStatus"
+            text="Loading"
+            state="Information" />
+    </HBox>
+
+    <viz:VizFrame
+        id="monthlyRevenueChart"
+        width="100%"
+        height="24rem"
+        vizType="column"
+        uiConfig="{applicationSet:'fiori'}">
+
+        <viz:dataset>
+            <viz.data:FlattenedDataset
+                id="monthlyRevenueDataset"
+                data="{monthlyRevenue>/months}">
+
+                <viz.data:dimensions>
+                    <viz.data:DimensionDefinition
+                        id="monthlyRevenueMonthDimension"
+                        name="Month"
+                        value="{monthlyRevenue>monthLabel}" />
+                </viz.data:dimensions>
+
+                <viz.data:measures>
+                    <viz.data:MeasureDefinition
+                        id="monthlyRevenueMeasure"
+                        name="Revenue"
+                        value="{monthlyRevenue>revenueCr}" />
+                </viz.data:measures>
+
+            </viz.data:FlattenedDataset>
+        </viz:dataset>
+
+        <viz:feeds>
+            <viz.feeds:FeedItem
+                id="monthlyRevenueValueFeed"
+                uid="valueAxis"
+                type="Measure"
+                values="Revenue" />
+
+            <viz.feeds:FeedItem
+                id="monthlyRevenueCategoryFeed"
+                uid="categoryAxis"
+                type="Dimension"
+                values="Month" />
+        </viz:feeds>
+
+    </viz:VizFrame>
+</VBox>
 
                             </VBox>
                         </IconTabFilter>
